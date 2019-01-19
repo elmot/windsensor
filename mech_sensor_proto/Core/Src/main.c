@@ -84,6 +84,9 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __unused _write(int __unused file, char *data, int len) {
+    return (HAL_UART_Transmit(&huart2, (uint8_t *) data, (uint16_t) len, 200) == HAL_OK ? len : 0);
+}
 
 /* USER CODE END 0 */
 
@@ -119,17 +122,22 @@ int main(void)
   MX_SPI3_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  radioCheck();
+  radioInit();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      radioLoop();
   }
+#pragma clang diagnostic pop
   /* USER CODE END 3 */
 }
 
@@ -360,8 +368,17 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+    printf("FAIL\r\n");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while (1) {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        HAL_Delay(50);
+    }
+#pragma clang diagnostic pop
 
-  /* USER CODE END Error_Handler_Debug */
+
+    /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
