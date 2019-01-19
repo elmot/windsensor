@@ -1,4 +1,5 @@
 #include <memory.h>
+#include <stdbool.h>
 #include "support.h"
 #include "nrf24.h"
 //
@@ -6,6 +7,7 @@
 //
 // Buffer to store a payload of maximum width
 
+extern I2C_HandleTypeDef hi2c1;
 
 void Toggle_LED() {
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
@@ -75,6 +77,7 @@ void radioInit() {// Initialize the nRF24L01 to its default state
 }
 
 void radioCheck() {
+    Delay_ms(100);
     nRF24_Init();
 
     printf("\r\nSTM32F303RE is online.\r\n");
@@ -95,7 +98,7 @@ void radioLoop() {
         // Get a payload from the transceiver
         pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
         if (payload_length > 0) {
-            nRF24_WriteAckPayload(pipe, "aCk PaYlOaD", 11);
+            nRF24_WriteAckPayload(pipe, reply, (uint8_t) strlen(reply));
         }
 
         // Clear all pending IRQ flags
@@ -107,3 +110,77 @@ void radioLoop() {
         printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
     }
 }
+
+#define  AS5601_ADDR 0x36
+#define  I2C_TIMEOUT 1000
+
+uint16_t as5601ReadReg(int addr, bool wide, uint16_t mask, HAL_StatusTypeDef *status) {
+    uint16_t buf;
+    *status = HAL_I2C_Mem_Read(&hi2c1,
+                               AS5601_ADDR * 2,
+                               (uint16_t) addr,
+                               I2C_MEMADD_SIZE_8BIT,
+                               (uint8_t *) &buf,
+                               (uint16_t) (wide ? 2 : 1),
+                               I2C_TIMEOUT);
+    if (wide) {
+        return __bswap16(buf) & mask;
+    } else {
+        return buf & mask;
+    }
+}
+
+void AS5601_print_reg8(const char *formatStr, int addr, uint8_t mask) {
+    HAL_StatusTypeDef status;
+    uint8_t result = (uint8_t) as5601ReadReg(addr, false, mask, &status);
+    if (status == HAL_OK) {
+        printf(formatStr, result & mask);
+    } else {
+        printf("ERROR %x\n\r", status);
+    }
+}
+
+void AS5601_print_reg16(const char *formatStr, int addr, uint16_t mask) {
+    HAL_StatusTypeDef status;
+    uint16_t result = as5601ReadReg(addr, true, mask, &status);
+    if (status == HAL_OK) {
+        printf(formatStr, result & mask);
+    } else {
+        printf("ERROR %x\n\r", status);
+    }
+}
+
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "readability-magic-numbers"
+static char sens_data_internal[15];
+char *reply;
+void sensorLoop() {
+    HAL_StatusTypeDef status;
+    uint8_t agc = 0;
+    uint16_t angle = 0;
+    uint16_t speed = 123;//todo read from somewhere
+    char lamp = '0';//todo read from somewhere
+    agc = (uint8_t) as5601ReadReg(0x1A, false, 0xFF, &status);
+    if(status == HAL_OK) {
+        angle = as5601ReadReg(0x0C, true, 0xFFF, &status);
+    }
+    if(status == HAL_OK) {
+        snprintf(sens_data_internal, sizeof(sens_data_internal),"%c;%02x;%03x;%04x",lamp,agc,angle,speed);
+        reply = sens_data_internal;
+    } else {
+        reply = "ERROR";
+        resetI2C();
+    }
+}
+#pragma clang diagnostic pop
+
+/*
+void sensorLoop() {
+    AS5601_print_reg8("Status: %02x; ", 0xb,0x38);
+    AS5601_print_reg8("AGC: %3x; ", 0x1a,0xff);
+    AS5601_print_reg16("Raw Angle: %04x; ", 0x0c, 0xFFF);
+    AS5601_print_reg16("Angle: %04x\n\r", 0x0e, 0xFFF);
+
+}
+ */

@@ -133,6 +133,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       radioLoop();
+      HAL_Delay(200);
+
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */

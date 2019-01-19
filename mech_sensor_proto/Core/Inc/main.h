@@ -77,7 +77,9 @@ void Error_Handler(void);
 void radioCheck(void);
 void radioInit(void);
 void radioLoop(void);
-
+void sensorLoop(void);
+void resetI2C(void);
+extern char *reply;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -104,8 +106,8 @@ void radioLoop(void);
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
-
 /* USER CODE END Private defines */
+
 
 #ifdef __cplusplus
 }

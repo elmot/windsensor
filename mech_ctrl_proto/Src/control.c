@@ -142,7 +142,6 @@ void radioLoop(void) {
     printf("   ACK_PAYLOAD=>%s<   ARC=%d LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 
     // Wait ~0.5s
-    Delay_ms(500);
     Toggle_LED();
 }
 
@@ -202,6 +201,7 @@ void radioInit() {// Initialize the nRF24L01 to its default state
 
 void radioCheck() {
     printf("\r\nSTM32L432KC is online.\r\n");
+    Delay_ms(100);
 
     // RX/TX disabled
     nRF24_CE_L();

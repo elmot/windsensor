@@ -88,6 +88,10 @@ int __unused _write(int __unused file, char *data, int len) {
     return (HAL_UART_Transmit(&huart2, (uint8_t *) data, (uint16_t) len, 200) == HAL_OK ? len : 0);
 }
 
+void resetI2C() {
+    HAL_I2C_DeInit(&hi2c1);
+    MX_I2C1_Init();
+}
 /* USER CODE END 0 */
 
 /**
@@ -136,6 +140,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       radioLoop();
+      sensorLoop();
+//      puts(reply);
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */
@@ -378,7 +384,7 @@ void Error_Handler(void)
 #pragma clang diagnostic pop
 
 
-    /* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
