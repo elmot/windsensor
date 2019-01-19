@@ -8,15 +8,7 @@
 
 
 void Toggle_LED() {
-    HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-}
-void printBufHex(char *buf, uint16_t bufsize) {
-    uint16_t i;
-    char ch;
-    for (i = 0; i < bufsize; i++) {
-        ch = *buf++;
-        printf("%02x ",ch);
-    }
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 }
 
 uint8_t nRF24_payload[32];
@@ -100,19 +92,18 @@ void radioCheck() {
 
 void radioLoop() {
     if (nRF24_GetStatus_RXFIFO() != nRF24_STATUS_RXFIFO_EMPTY) {
-            // Get a payload from the transceiver
-            pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
-            if(payload_length > 0) {
-                nRF24_WriteAckPayload(pipe, "aCk PaYlOaD",11);
-            }
-
-            // Clear all pending IRQ flags
-            nRF24_ClearIRQFlags();
-
-            // Print a payload contents to UART
-            Toggle_LED();
-            printf("RCV PIPE#%d PAYLOAD:>",pipe);
-            printBufHex((char *) nRF24_payload, payload_length);
-            printf("<\r\n");
+        // Get a payload from the transceiver
+        pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
+        if (payload_length > 0) {
+            nRF24_WriteAckPayload(pipe, "aCk PaYlOaD", 11);
         }
+
+        // Clear all pending IRQ flags
+        nRF24_ClearIRQFlags();
+
+        // Print a payload contents to UART
+        Toggle_LED();
+        nRF24_payload[payload_length] = 0;
+        printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
+    }
 }
