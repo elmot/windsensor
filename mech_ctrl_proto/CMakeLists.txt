@@ -15,7 +15,7 @@ set(OBJDUMP arm-none-eabi-objdump)
 set(SIZE arm-none-eabi-size)
 
 
-SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F303RETx_FLASH.ld)
+SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L432KCUx_FLASH.ld)
 
 #Uncomment for hardware floating point
 #SET(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
@@ -32,15 +32,15 @@ SET(CMAKE_CXX_FLAGS_INIT "${COMMON_FLAGS} -std=c++11")
 SET(CMAKE_C_FLAGS_INIT "${COMMON_FLAGS} -std=gnu99")
 SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections,--print-memory-usage -T ${LINKER_SCRIPT}")
 
-PROJECT(mech_sensor_proto C CXX ASM)
+PROJECT(mech_ctrl_proto C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
 
 #add_definitions(-DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT=1)
-add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DSTM32F303xE -DUSE_HAL_DRIVER)
+add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DSTM32L432xx -DUSE_HAL_DRIVER)
 
-file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Core/*.*")
+file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Src/*.*" "Inc/*.*")
 
-include_directories(Core/Inc Drivers/STM32F3xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F3xx/Include Drivers/CMSIS/Include Drivers/STM32F3xx_HAL_Driver/Inc/Legacy)
+include_directories(Inc Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include Drivers/STM32L4xx_HAL_Driver/Inc/Legacy)
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
