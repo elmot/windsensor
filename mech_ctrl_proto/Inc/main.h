@@ -92,6 +92,10 @@ void radioLoop(void);
 #define NRF_IRQ_Pin GPIO_PIN_0
 #define NRF_IRQ_GPIO_Port GPIOB
 #define NRF_IRQ_EXTI_IRQn EXTI0_IRQn
+#define BTN3_Pin GPIO_PIN_8
+#define BTN3_GPIO_Port GPIOA
+#define BTN2_Pin GPIO_PIN_11
+#define BTN2_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
@@ -100,6 +104,10 @@ void radioLoop(void);
 #define VCP_RX_GPIO_Port GPIOA
 #define LD3_Pin GPIO_PIN_3
 #define LD3_GPIO_Port GPIOB
+#define ZERO_Pin GPIO_PIN_4
+#define ZERO_GPIO_Port GPIOB
+#define BTN1_Pin GPIO_PIN_5
+#define BTN1_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

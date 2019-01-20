@@ -8,6 +8,7 @@
 // Buffer to store a payload of maximum width
 
 extern I2C_HandleTypeDef hi2c1;
+char lamp = 0;
 
 void Toggle_LED() {
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
@@ -105,9 +106,11 @@ void radioLoop() {
         nRF24_ClearIRQFlags();
 
         // Print a payload contents to UART
-        Toggle_LED();
+
         nRF24_payload[payload_length] = 0;
         printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
+        lamp = (char) (nRF24_payload[1] & 1);
+        HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin,lamp);
     }
 }
 
@@ -160,13 +163,12 @@ void sensorLoop() {
     uint8_t agc = 0;
     uint16_t angle = 0;
     uint16_t speed = 123;//todo read from somewhere
-    char lamp = '0';//todo read from somewhere
     agc = (uint8_t) as5601ReadReg(0x1A, false, 0xFF, &status);
     if(status == HAL_OK) {
         angle = as5601ReadReg(0x0C, true, 0xFFF, &status);
     }
     if(status == HAL_OK) {
-        snprintf(sens_data_internal, sizeof(sens_data_internal),"%c;%02x;%03x;%04x",lamp,agc,angle,speed);
+        snprintf(sens_data_internal, sizeof(sens_data_internal),"%c;%02x;%03x;%04x", lamp ? '0' : '1' ,agc,angle,speed);
         reply = sens_data_internal;
     } else {
         reply = "ERROR";

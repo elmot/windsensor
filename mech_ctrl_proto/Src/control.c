@@ -90,6 +90,9 @@ nRF24_TXResult nRF24_TransmitPacket(uint8_t *pBuf, uint8_t length) {
 
     return nRF24_TX_ERROR;
 }
+static char * button ="B1";
+
+void checkButtons();
 
 void radioLoop(void) {
 
@@ -104,20 +107,24 @@ void radioLoop(void) {
     // The main loop
     static int j = 33;
 
-    payload_length = (uint8_t) (2 + (j + j / 10) % 7);
+//    payload_length = (uint8_t) (2 + (j + j / 10) % 7);
+//    payload_length = 4;
 
     // Prepare data packet
+/*
     for (i = 0; i < payload_length; i++) {
         nRF24_payload[i] = (uint8_t) j++;
         if (j > 'z') j = 33;
     }
+*/
 
     // Print a payload
-    nRF24_payload[payload_length] = 0;
-    printf("PAYLOAD:>%s< ... TX: ", nRF24_payload);
+//    nRF24_payload[payload_length] = 0;
+//    printf("PAYLOAD:>%s< ... TX: ", nRF24_payload);
+    printf("PAYLOAD:>%s< ... TX: ", button);
 
     // Transmit a packet
-    tx_res = nRF24_TransmitPacket(nRF24_payload, payload_length);
+    tx_res = nRF24_TransmitPacket(button, 6);
     otx = nRF24_GetRetransmitCounters();
     nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
     otx_plos_cnt = (otx & nRF24_MASK_PLOS_CNT) >> 4; // packets lost counter
@@ -142,7 +149,26 @@ void radioLoop(void) {
     printf("   ACK_PAYLOAD=>%s<   ARC=%d LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 
     // Wait ~0.5s
-    Toggle_LED();
+    if(payload_length>0){
+        Toggle_LED();
+    }
+    checkButtons();
+
+}
+
+void checkButtons() {
+
+    if(HAL_GPIO_ReadPin(BTN1_GPIO_Port,BTN1_Pin)==GPIO_PIN_RESET) {
+        button = "B1";
+    } else
+
+    if(HAL_GPIO_ReadPin(BTN2_GPIO_Port,BTN2_Pin)==GPIO_PIN_RESET) {
+        button = "B2";
+    } else
+
+    if(HAL_GPIO_ReadPin(BTN3_GPIO_Port,BTN3_Pin)==GPIO_PIN_RESET) {
+        button = "B3";
+    }
 }
 
 void radioInit() {// Initialize the nRF24L01 to its default state
