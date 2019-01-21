@@ -90,9 +90,12 @@ nRF24_TXResult nRF24_TransmitPacket(uint8_t *pBuf, uint8_t length) {
 
     return nRF24_TX_ERROR;
 }
-static char * button ="B1";
+
+static char *button = "B1";
 
 void checkButtons();
+
+void appendChecksumEol(char *nmea, int maxLen);
 
 void radioLoop(void) {
 
@@ -121,7 +124,7 @@ void radioLoop(void) {
     // Print a payload
 //    nRF24_payload[payload_length] = 0;
 //    printf("PAYLOAD:>%s< ... TX: ", nRF24_payload);
-    printf("PAYLOAD:>%s< ... TX: ", button);
+    printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
 
     // Transmit a packet
     tx_res = nRF24_TransmitPacket(button, 6);
@@ -146,27 +149,60 @@ void radioLoop(void) {
             break;
     }
     nRF24_payload[payload_length] = 0;
-    printf("   ACK_PAYLOAD=>%s<   ARC=%d LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+
+    printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+    int buttonReport, agcReport, angleReport, speedReport;
+    sscanf((const char *) nRF24_payload, "%x;%x;%x;%x", &buttonReport, &agcReport, &angleReport, &speedReport);
+
+    static char nmea[100];
+
+    snprintf(nmea, sizeof(nmea), "$GPRMC,123519,A,6022.0962,N,02829.173,E,012.4,064.4,230119,003.1,W");
+    appendChecksumEol(nmea, sizeof(nmea));
+    printf(nmea);
+
+    char *lr;
+    int angle;
+    if (agcReport == 0x80 || agcReport == 0) {
+        lr = "";
+        angle = -1;
+    } else if ( angleReport >= 0x800 )
+    {
+        lr="L";
+        angle = 180 *(0xFFF - angleReport) / 0x800;
+    } else {
+        lr="R";
+        angle = 180 * angleReport / 0x800;
+    }
+    snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,12.2,N,6.27,M,22.6,K", angle, lr);
+    appendChecksumEol(nmea, sizeof(nmea));
+    printf(nmea);
 
     // Wait ~0.5s
-    if(payload_length>0){
+    if (payload_length > 0) {
         Toggle_LED();
     }
     checkButtons();
 
 }
 
+void appendChecksumEol(char *nmea, int maxLen) {
+    int sum = 0;
+    int pos;
+    if ((nmea == NULL) || (*nmea == 0)) return;
+    for (pos = 1; nmea[pos] != 0; pos++) {
+        sum ^= nmea[pos];
+    }
+    snprintf(&nmea[pos], (size_t) (maxLen - pos), "*%02x\r\n", sum);
+
+}
+
 void checkButtons() {
 
-    if(HAL_GPIO_ReadPin(BTN1_GPIO_Port,BTN1_Pin)==GPIO_PIN_RESET) {
+    if (HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin) == GPIO_PIN_RESET) {
         button = "B1";
-    } else
-
-    if(HAL_GPIO_ReadPin(BTN2_GPIO_Port,BTN2_Pin)==GPIO_PIN_RESET) {
+    } else if (HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET) {
         button = "B2";
-    } else
-
-    if(HAL_GPIO_ReadPin(BTN3_GPIO_Port,BTN3_Pin)==GPIO_PIN_RESET) {
+    } else if (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET) {
         button = "B3";
     }
 }
