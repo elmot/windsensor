@@ -24,14 +24,13 @@
 #define Graphic        1
 #define    Character    0
 
-uint TP_X = 0;
-uint TP_Y = 0;       //LOCATE X AND Y OF TP
-
 unsigned char const BMP0[];
 unsigned char const BMP1[];
 unsigned char const BMP2[];
 unsigned char const Chinese_character[];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
 void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
@@ -44,53 +43,12 @@ void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
     __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
 }
+#pragma clang diagnostic pop
+
 void Locatexy(uchar xa, uchar ya, uchar mode);
 
 void CheckBusy_S0S1();
-
-void CheckBusy_S2();
 
 void CheckBusy_S3();
 
@@ -114,20 +72,6 @@ void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts);
 
 void Delay(uint MS);
 
-void TestAscll(void);
-
-/************************TP*************************/
-
-
-void inttostr(int dd, unsigned char *str) {
-    str[0] = dd / 10000 + 48;
-    str[1] = (dd / 1000) - ((dd / 10000) * 10) + 48;
-    str[2] = (dd / 100) - ((dd / 1000) * 10) + 48;
-    str[3] = (dd / 10) - ((dd / 100) * 10) + 48;
-    str[4] = dd - ((dd / 10) * 10) + 48;
-    str[5] = 0;
-}
-
 /************************LCM*************************/
 /********************************************************/
 // LOCATE X AND Y OF LCM
@@ -137,11 +81,11 @@ void Locatexy(uchar xa, uchar ya, uchar mode) {
     if (mode)                //Graphic mode   x=0-29  y=0-127    START ADDRESS £º0800
     {
         a = ya * 30 + xa;
-        WriteCommand((uchar) a, (uchar) (a >> 8) + 0x08, 0x24, 2);
+        WriteCommand((uchar) a, (a >> 8u) + 0x08u, 0x24u, 2u);
     } else                    //Character mode   x=0-29  y=0-15    START ADDRESS £º0000
     {
         a = ya * 30 + xa;
-        WriteCommand((uchar) (a), (uchar) (a >> 8), 0x24, 2);
+        WriteCommand((uchar) (a), (a >> 8u), 0x24, 2);
     }
 
 }
@@ -164,8 +108,7 @@ void static waitForBits(uint32_t bits) {
     MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0b0101010101010101U);
 }
 
-void CheckBusy_S0S1()
-{
+void CheckBusy_S0S1() {
     waitForBits(0x3);
 }
 
@@ -370,21 +313,20 @@ void mainLcd(void) {
         Delay(1000);
 
         LcmClear();
- DisplayDots(0x55,0xaa);
- Delay(1000);
-  DisplayDots(0xaa,0x55);
-  Delay(1000);
+        DisplayDots(0x55, 0xaa);
+        Delay(1000);
+        DisplayDots(0xaa, 0x55);
+        Delay(1000);
 
- DisplayDots(0x55,0x55);
- Delay(1000);
-  DisplayDots(0xaa,0xaa);
-  Delay(1000);
+        DisplayDots(0x55, 0x55);
+        Delay(1000);
+        DisplayDots(0xaa, 0xaa);
+        Delay(1000);
 
-  DisplayDots(0xff,0x00);
-  Delay(1000);
-  DisplayDots(0x00,0xff);
-  Delay(1000);
-/*
+        DisplayDots(0xff, 0x00);
+        Delay(1000);
+        DisplayDots(0x00, 0xff);
+        Delay(1000);
         DisplayBMP(0, 0, 240, 128, BMP0);
         Delay(1500);
         ReverseDisplayBMP(0, 0, 240, 128, BMP0);
@@ -398,7 +340,6 @@ void mainLcd(void) {
         Delay(1500);
         ReverseDisplayBMP(0, 0, 240, 128, BMP2);
         Delay(1500);
-*/
 
 
     }
