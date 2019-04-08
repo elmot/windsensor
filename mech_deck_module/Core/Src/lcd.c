@@ -32,7 +32,60 @@ unsigned char const BMP1[];
 unsigned char const BMP2[];
 unsigned char const Chinese_character[];
 
-
+void static inline __attribute__((optimize("O0"))) shortDelay() {
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+}
 void Locatexy(uchar xa, uchar ya, uchar mode);
 
 void CheckBusy_S0S1();
@@ -62,12 +115,6 @@ void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts);
 void Delay(uint MS);
 
 void TestAscll(void);
-
-void inttostr(int dd, unsigned char *str);
-
-unsigned int ReadFromCharFrom7843();
-
-void WriteCharTo7843(unsigned char num);
 
 /************************TP*************************/
 
@@ -102,23 +149,26 @@ void Locatexy(uchar xa, uchar ya, uchar mode) {
 /***************************/
 /*LCM READ AND WRITE BUSY CHECK*/
 /***************************/
+void static waitForBits(uint32_t bits) {
+    MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0x0000U);
+    uint b;
+    do {
+        LL_GPIO_SetOutputPin(DISP_CD_GPIO_Port, DISP_CD_Pin);
+        LL_GPIO_ResetOutputPin(DISP_RD_GPIO_Port, DISP_RD_Pin);
+        shortDelay();
+        b = LL_GPIO_ReadInputPort(DISP_D0_GPIO_Port);
+        LL_GPIO_SetOutputPin(DISP_RD_GPIO_Port, DISP_RD_Pin);
+        shortDelay();
+    } while ((b & bits) != bits);
+
+    MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0b0101010101010101U);
+}
+
 void CheckBusy_S0S1()
 {
-    uchar b;
-    Delay(300);//todo restore read
-/*
-    do
-    {
-        GPIO_DataBus=0xff;
-        CD=1;
-        _RD=0;
-        b=DataBus;
-        _RD=1;
-    }
-    while(b&0x03!=0x03);
-*/
-
+    waitForBits(0x3);
 }
+
 /***************************/
 /*DATA AUTO READ BUSY CHECK*/
 /***************************/
@@ -142,16 +192,7 @@ void CheckBusy_S2()
 /***************************/
 
 void CheckBusy_S3() {
-    uchar b;
-    Delay(300);//todo restore read
-/*    do {
-        DataBus = 0xff;
-        CD = 1;
-        _RD = 0;
-        b = DataBus;
-        _RD = 1;
-    } while ((b & 0x08) != 0x08);
-    */
+    waitForBits(0x8);
 }
 
 
@@ -170,11 +211,12 @@ void WriteCommand(uchar dat1, uchar dat2, uchar command, uchar parameters_num) {
     }
 
     CheckBusy_S3();
-    HAL_GPIO_WritePin(DISP_CD_GPIO_Port, DISP_CD_Pin, 1);
-    DISP_D0_GPIO_Port->ODR = command;
-    HAL_GPIO_WritePin(DISP_WR_GPIO_Port, DISP_WR_Pin, 0);
-    Delay(1);//todo make shorter
-    HAL_GPIO_WritePin(DISP_WR_GPIO_Port, DISP_WR_Pin, 1);
+    LL_GPIO_SetOutputPin(DISP_CD_GPIO_Port, DISP_CD_Pin);
+    LL_GPIO_WriteOutputPort(DISP_D0_GPIO_Port, command);
+    LL_GPIO_ResetOutputPin(DISP_WR_GPIO_Port, DISP_WR_Pin);
+    shortDelay();
+    LL_GPIO_SetOutputPin(DISP_WR_GPIO_Port, DISP_WR_Pin);
+    shortDelay();
 
 }
 
@@ -183,11 +225,12 @@ void WriteCommand(uchar dat1, uchar dat2, uchar command, uchar parameters_num) {
 /*WRITE DATA                 */
 /***************************/
 void WriteData(uchar DataByte) {
-    HAL_GPIO_WritePin(DISP_CD_GPIO_Port, DISP_CD_Pin, 0);
+    LL_GPIO_ResetOutputPin(DISP_CD_GPIO_Port, DISP_CD_Pin);
     DISP_D0_GPIO_Port->ODR = DataByte;
-    HAL_GPIO_WritePin(DISP_WR_GPIO_Port, DISP_WR_Pin, 0);
-    Delay(1);//todo make shorter
-    HAL_GPIO_WritePin(DISP_WR_GPIO_Port, DISP_WR_Pin, 1);
+    LL_GPIO_ResetOutputPin(DISP_WR_GPIO_Port, DISP_WR_Pin);
+    shortDelay();
+    LL_GPIO_SetOutputPin(DISP_WR_GPIO_Port, DISP_WR_Pin);
+    shortDelay();
 }
 
 void LcmClear(void) {
@@ -277,22 +320,22 @@ void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
 
 
 void Delay(uint MS) {
-    HAL_Delay(MS);
+    LL_mDelay(MS);
 }
 
 
 void LcmInit(void) {
-    HAL_GPIO_WritePin(DISP_RESET_GPIO_Port, DISP_RESET_Pin, 0);
+    LL_GPIO_ResetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
     Delay(50);
-    HAL_GPIO_WritePin(DISP_RESET_GPIO_Port, DISP_RESET_Pin, 1);
+    LL_GPIO_SetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
     Delay(50);
-    WriteCommand(0, 0, 0x40, 2);
-    WriteCommand(30, 0, 0x41, 2);
-    WriteCommand(0, 0x08, 0x42, 2);
-    WriteCommand(30, 0, 0x43, 2);
-    WriteCommand(0, 0, 0xa7, 0);
-    WriteCommand(0, 0, 0x80, 0);
-    WriteCommand(0, 0, 0x9c, 0);
+    WriteCommand(0, 0, 0x40, 2);//set text home address to 0
+    WriteCommand(30, 0, 0x41, 2);//set text area to 30 columns
+    WriteCommand(0, 0x08, 0x42, 2);//set graphics home address to 0x800(?)
+    WriteCommand(30, 0, 0x43, 2);//set graphics area to 30 columns
+    WriteCommand(0, 0, 0xa7, 0);//cursor pattern 8 lines
+    WriteCommand(0, 0, 0x80, 0);//Internal GC rom mode, OR mode
+    WriteCommand(0, 0, 0x9C, 0);//text on, graphics on
 }
 
 
@@ -324,10 +367,9 @@ void mainLcd(void) {
         Display_Str(0, 9, "Y:COORDINATES:");
 
         Display_Str(0, 15, "EXIT ");
-        Delay(10000);
+        Delay(1000);
 
         LcmClear();
-/*
  DisplayDots(0x55,0xaa);
  Delay(1000);
   DisplayDots(0xaa,0x55);
@@ -342,7 +384,7 @@ void mainLcd(void) {
   Delay(1000);
   DisplayDots(0x00,0xff);
   Delay(1000);
-*/
+/*
         DisplayBMP(0, 0, 240, 128, BMP0);
         Delay(1500);
         ReverseDisplayBMP(0, 0, 240, 128, BMP0);
@@ -356,6 +398,7 @@ void mainLcd(void) {
         Delay(1500);
         ReverseDisplayBMP(0, 0, 240, 128, BMP2);
         Delay(1500);
+*/
 
 
     }

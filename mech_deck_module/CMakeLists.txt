@@ -24,7 +24,7 @@ SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L053R8Tx_FLASH.ld)
 #SET(FPU_FLAGS "-mfloat-abi=soft")
 
 SET(COMMON_FLAGS
-    "-mcpu=cortex-m0 ${FPU_FLAGS} -mthumb -mthumb-interwork -ffunction-sections -fdata-sections \
+    "-mcpu=cortex-m0 ${FPU_FLAGS} -mthumb -mthumb-interwork -ffunction-sections -fdata-sections -Og\
     -g -fno-common -fmessage-length=0 -specs=nosys.specs -specs=nano.specs")
 
 SET(CMAKE_CXX_FLAGS_INIT "${COMMON_FLAGS} -std=c++11")
@@ -35,11 +35,11 @@ PROJECT(mech_deck_module C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
 
 #add_definitions(-DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT=1)
-add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DUSE_HAL_DRIVER -DSTM32L053xx)
+add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DSTM32L053xx -DUSE_FULL_LL_DRIVER -DUSE_FULL_ASSERT=1U -DHSE_VALUE=8000000 -DHSE_STARTUP_TIMEOUT=100 -DLSE_STARTUP_TIMEOUT=5000 -DLSE_VALUE=32768 -DMSI_VALUE=2097000 -DHSI_VALUE=16000000 -DLSI_VALUE=37000 -DVDD_VALUE=3300 -DPREFETCH_ENABLE=0 -DINSTRUCTION_CACHE_ENABLE=1 -DDATA_CACHE_ENABLE=1)
 
 file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Core/*.*")
 
-include_directories(Core/Inc Drivers/STM32L0xx_HAL_Driver/Inc Drivers/STM32L0xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32L0xx/Include Drivers/CMSIS/Include)
+include_directories(Core/Inc Drivers/STM32L0xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L0xx/Include Drivers/CMSIS/Include)
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
@@ -54,9 +54,3 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE}
 Building ${BIN_FILE}")
-
-add_custom_target(UPLOAD
-        arm-none-eabi-gdb -iex "target remote tcp:127.0.0.1:3333"
-        -iex "monitor program $<TARGET_FILE:${PROJECT_NAME}.elf>"
-        -iex "monitor reset init"
-        -iex "disconnect" -iex "quit")
