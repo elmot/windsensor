@@ -37,6 +37,8 @@ extern "C" {
 #include "stm32l0xx_ll_utils.h"
 #include "stm32l0xx_ll_pwr.h"
 #include "stm32l0xx_ll_dma.h"
+#include "stm32l0xx_ll_spi.h"
+#include "stm32l0xx_ll_tim.h"
 #include "stm32l0xx_ll_usart.h"
 #include "stm32l0xx.h"
 #include "stm32l0xx_ll_gpio.h"
@@ -89,10 +91,18 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin LL_GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define DISP_BG_Pin LL_GPIO_PIN_6
+#define DISP_BG_GPIO_Port GPIOA
 #define DISP_D4_Pin LL_GPIO_PIN_4
 #define DISP_D4_GPIO_Port GPIOC
 #define DISP_D5_Pin LL_GPIO_PIN_5
 #define DISP_D5_GPIO_Port GPIOC
+#define NRF_IRQ_Pin LL_GPIO_PIN_10
+#define NRF_IRQ_GPIO_Port GPIOB
+#define NRF_CE_Pin LL_GPIO_PIN_11
+#define NRF_CE_GPIO_Port GPIOB
+#define NRF_CSN_Pin LL_GPIO_PIN_12
+#define NRF_CSN_GPIO_Port GPIOB
 #define DISP_D6_Pin LL_GPIO_PIN_6
 #define DISP_D6_GPIO_Port GPIOC
 #define DISP_D7_Pin LL_GPIO_PIN_7

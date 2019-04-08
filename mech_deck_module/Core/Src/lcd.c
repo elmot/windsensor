@@ -199,14 +199,13 @@ void Display_16_16(uchar x, uchar y, uchar const *character, uchar character_cod
     uchar k, j;
     uint num = 0;
     num = character_code * 0x20;
-    Locatexy(x, y, Graphic);
     for (j = 0; j < 16; j++) {
+        Locatexy(x, y, Graphic);
         for (k = 0; k < 2; k++) {
             WriteCommand(*(character + num), 0, 0xc0, 1);
             num++;
         }
         y += 1;
-        Locatexy(x, y, Graphic);
     }
 
 }
@@ -231,9 +230,9 @@ void DisplayDots(uchar DotByte, uchar DotByte1) {
 
 void DisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
     uchar k, j;
-    Locatexy(x, y, Graphic);
 
     for (j = 0; j < H; j++) {
+        Locatexy(x, y, Graphic);
         WriteCommand(0, 0, 0xb0, 0);
         for (k = 0; k < W / 8; k++) {
             WriteData(*puts++);
@@ -241,15 +240,14 @@ void DisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
         }
         WriteCommand(0, 0, 0xb2, 0);
         y += 1;
-        Locatexy(x, y, Graphic);
     }
 }
 
 void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
     uchar k, j;
-    Locatexy(x, y, Graphic);
 
     for (j = 0; j < H; j++) {
+        Locatexy(x, y, Graphic);
         WriteCommand(0, 0, 0xb0, 0);
         for (k = 0; k < W / 8; k++) {
             WriteData(~(*puts));
@@ -257,7 +255,6 @@ void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
         }
         WriteCommand(0, 0, 0xb2, 0);
         y += 1;
-        Locatexy(x, y, Graphic);
     }
 }
 
@@ -310,7 +307,13 @@ void mainLcd(void) {
         Display_Str(0, 9, "Y:COORDINATES:");
 
         Display_Str(0, 15, "EXIT ");
-        Delay(1000);
+
+        char buf[100];
+        double v = sin(2);
+        sprintf(buf,"Sin(2) = %f",v);
+        Display_Str(0, 11, buf);
+
+        Delay(4000);
 
         LcmClear();
         DisplayDots(0x55, 0xaa);

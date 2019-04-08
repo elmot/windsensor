@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -94,7 +96,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM22_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
+
+    /* Enable output channel 1 */
+    LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
+    /* Enable counter */
+    LL_TIM_EnableCounter(TIM22);
+    /* Force update generation */
+    LL_TIM_GenerateEvent_UPDATE(TIM22);
     mainLcd();
   /* USER CODE END 2 */
 

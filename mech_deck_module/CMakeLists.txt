@@ -18,7 +18,8 @@ SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L053R8Tx_FLASH.ld)
 
 #Uncomment for hardware floating point
 #SET(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
-#add_definitions(-DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT=1)
+
+add_definitions(-DARM_MATH_CM0PLUS -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING )
 
 #Uncomment for software floating point
 #SET(FPU_FLAGS "-mfloat-abi=soft")
@@ -29,7 +30,7 @@ SET(COMMON_FLAGS
 
 SET(CMAKE_CXX_FLAGS_INIT "${COMMON_FLAGS} -std=c++11")
 SET(CMAKE_C_FLAGS_INIT "${COMMON_FLAGS} -std=gnu99")
-SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections,--print-memory-usage -T ${LINKER_SCRIPT}")
+SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections,--print-memory-usage,-u,_printf_float -T ${LINKER_SCRIPT}")
 
 PROJECT(mech_deck_module C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
