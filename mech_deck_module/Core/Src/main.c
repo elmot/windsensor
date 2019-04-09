@@ -20,9 +20,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
 #include "spi.h"
 #include "tim.h"
-#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -98,6 +98,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM22_Init();
   MX_SPI2_Init();
+  MX_LPUART1_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
     /* Enable output channel 1 */
@@ -166,7 +168,9 @@ void SystemClock_Config(void)
   LL_Init1msTick(32000000);
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(32000000);
+  LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK2);
   LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_PCLK1);
+  LL_RCC_SetLPUARTClockSource(LL_RCC_LPUART1_CLKSOURCE_PCLK1);
 }
 
 /* USER CODE BEGIN 4 */

@@ -28,8 +28,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32l0xx_ll_crs.h"
+#include "stm32l0xx_ll_lpuart.h"
 #include "stm32l0xx_ll_rcc.h"
+#include "stm32l0xx_ll_crs.h"
 #include "stm32l0xx_ll_bus.h"
 #include "stm32l0xx_ll_system.h"
 #include "stm32l0xx_ll_exti.h"
@@ -49,6 +50,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
