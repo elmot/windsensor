@@ -55,10 +55,19 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void mainLcd(void);
+void initTextMode(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __unused _write(int __unused file, char *data, int len) {
+    for(;len>0;len--,data++)
+    {
+        while (!LL_USART_IsActiveFlag_TXE(USART2)) {}
+        LL_USART_TransmitData8(USART2, *data);
+    }
+    return len;
+}
 
 /* USER CODE END 0 */
 
@@ -108,6 +117,9 @@ int main(void)
     LL_TIM_EnableCounter(TIM22);
     /* Force update generation */
     LL_TIM_GenerateEvent_UPDATE(TIM22);
+
+    radioCheck();
+    radioInit();
     mainLcd();
   /* USER CODE END 2 */
 
@@ -120,6 +132,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      radioLoop();
+      LL_mDelay(200);
 
   }
 #pragma clang diagnostic pop

@@ -42,10 +42,10 @@ void MX_TIM22_Init(void)
   LL_TIM_DisableARRPreload(TIM22);
   LL_TIM_SetClockSource(TIM22, LL_TIM_CLOCKSOURCE_INTERNAL);
   LL_TIM_OC_EnablePreload(TIM22, LL_TIM_CHANNEL_CH1);
-  TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM2;
+  TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.CompareValue = 99;
-  TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_LOW;
+  TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
   LL_TIM_OC_Init(TIM22, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM22, LL_TIM_CHANNEL_CH1);
   LL_TIM_SetTriggerOutput(TIM22, LL_TIM_TRGO_RESET);

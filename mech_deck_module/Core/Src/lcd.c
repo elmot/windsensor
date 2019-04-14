@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <memory.h>
 #include "main.h"
 
 /********************DEFINE IO********************/
@@ -23,6 +24,7 @@ unsigned char const Chinese_character[];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-attributes"
+
 void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
@@ -36,6 +38,7 @@ void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
 }
+
 #pragma clang diagnostic pop
 
 void Locatexy(uchar xa, uchar ya, uchar mode);
@@ -58,7 +61,7 @@ void DisplayDots(uchar DotByte, uchar DotByte1);
 
 void LcmInit(void);
 
-void DisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts);
+void DisplayBMP(uint x, uint y, uint W, uint H, uchar const *puts);
 
 void ReverseDisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts);
 
@@ -220,18 +223,15 @@ void DisplayDots(uchar DotByte, uchar DotByte1) {
 }
 
 
-void DisplayBMP(uchar x, uchar y, uchar W, uchar H, uchar const *puts) {
+void DisplayBMP(uint x, uint y, uint W, uint H, uchar const *puts) {
     uchar k, j;
-
-    for (j = 0; j < H; j++) {
-        Locatexy(x, y, Graphic);
+    for (j = 0; j < H; j++, y--) {
+        Locatexy(x, H + y - 1, Graphic);
         WriteCommand(0, 0, 0xb0, 0);
         for (k = 0; k < W / 8; k++) {
             WriteData(*puts++);
-
         }
         WriteCommand(0, 0, 0xb2, 0);
-        y += 1;
     }
 }
 
@@ -267,70 +267,116 @@ void LcmInit(void) {
     WriteCommand(30, 0, 0x43, 2);//set graphics area to 30 columns
     WriteCommand(0, 0, 0xa7, 0);//cursor pattern 8 lines
     WriteCommand(0, 0, 0x80, 0);//Internal GC rom mode, OR mode
-    WriteCommand(0, 0, 0x9C, 0);//text on, graphics on
+    WriteCommand(0, 0, 0x98, 0);//text on, graphics on
 }
 
+/*** TEXT MODE ROUTINES ***/
+void initTextMode() {
+    LL_GPIO_ResetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
+    Delay(50);
+    LL_GPIO_SetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
+    Delay(50);
+    WriteCommand(0, 0, 0x40, 2);//set text home address to 0
+    WriteCommand(30, 0, 0x41, 2);//set text area to 30 columns
+    WriteCommand(0, 0x08, 0x42, 2);//set graphics home address to 0x800(?)
+    WriteCommand(30, 0, 0x43, 2);//set graphics area to 30 columns
+    WriteCommand(0, 0, 0xa2, 0);//cursor pattern 3 lines
+    WriteCommand(0, 0, 0x80, 0);//External GC rom mode, OR mode
+    WriteCommand(0, 0, 0x97, 0);//text on, graphics off, cursor blink & on
+    WriteCommand(1, 0, 0x60, 2);//cursor auto move on
+
+    WriteCommand(0xff, 0xff, 0x60, 2);//cursor auto move on
+    LcmClear();
+
+    Locatexy(0, 0, 0);
+//    WriteCommand(0, 0, 0x21, 2);//cursor auto move on
+
+}
+
+const uint8_t background[] =
+{
+#include "background.txt"
+};
+uint8_t screen_buffer[30 * 128];
 
 void mainLcd(void) {
 
     LcmInit();
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
-    while (1) {
-        TIM22->CCR1 = (TIM22->CCR1 + 37) % 99;
-        TIM22->CNT = 1;
-        LcmClear();
-        Display_16_16(0, 0, Chinese_character, 0);
-        Display_16_16(2, 0, Chinese_character, 1);
-        Display_16_16(4, 0, Chinese_character, 2);
-        Display_16_16(6, 0, Chinese_character, 3);
-        Display_16_16(8, 0, Chinese_character, 4);
-        Display_16_16(10, 0, Chinese_character, 5);
-        Display_16_16(12, 0, Chinese_character, 6);
-        Display_16_16(14, 0, Chinese_character, 7);
-        Display_16_16(16, 0, Chinese_character, 8);
-        Display_16_16(18, 0, Chinese_character, 9);
-        Display_16_16(20, 0, Chinese_character, 10);
-        Display_16_16(22, 0, Chinese_character, 11);
-        Display_16_16(24, 0, Chinese_character, 12);
-
-
-        Display_Str(0, 3, "EAST RISING TOUCH TEST PROGRAM");
-        Display_Str(7, 5, "PLEASE TOUCH ME!");
-        Display_Str(0, 7, "X:COORDINATES:");
-        Display_Str(0, 9, "Y:COORDINATES:");
-
-        Display_Str(0, 15, "EXIT ");
-
-        char buf[100] = "Sin(2) = ";
-        double v = sin(2);
-        sprintf(buf,"Sin(2) = %06.2f",v);
-        Display_Str(0, 11, buf);
-
-        Delay(1000);
-
-        LcmClear();
-        DisplayDots(0x55, 0xaa);
-        Delay(1000);
-        DisplayDots(0xaa, 0x55);
-        Delay(1000);
-
-        DisplayDots(0x55, 0x55);
-        Delay(1000);
-        DisplayDots(0xaa, 0xaa);
-        Delay(1000);
-
-        DisplayDots(0xff, 0x00);
-        Delay(1000);
-        DisplayDots(0x00, 0xff);
-        Delay(1000);
-        DisplayBMP(0, 0, 240, 128, BMP0);
-        Delay(1500);
-        ReverseDisplayBMP(0, 0, 240, 128, BMP0);
-        Delay(1500);
-
-
+    LcmClear();
+    TIM22->CCR1 = 0;
+    for (int i = 0; i < 60; i++) {
+        memcpy(screen_buffer, background, 30 * 128);
+        for (int j = 0; j < 128; j++) {
+            int k = - j/5 + i;
+            if(k < 0) k = 0;
+            for (; k < 30; k++) {
+                screen_buffer[j*30 + k] = 0;
+            }
+        }
+        DisplayBMP(0,0,240,128,screen_buffer);
+        LL_mDelay(5);
     }
+
+    while (1) {
+
+        uint32_t pwm = TIM22->CCR1 = (TIM22->CCR1 + 37) % 99;
+        printf("Backlight PWM: %ld\n", pwm);
+        LL_mDelay(300);
+    }
+    TIM22->CNT = 1;
+    LcmClear();
+    Display_16_16(0, 0, Chinese_character, 0);
+    Display_16_16(2, 0, Chinese_character, 1);
+    Display_16_16(4, 0, Chinese_character, 2);
+    Display_16_16(6, 0, Chinese_character, 3);
+    Display_16_16(8, 0, Chinese_character, 4);
+    Display_16_16(10, 0, Chinese_character, 5);
+    Display_16_16(12, 0, Chinese_character, 6);
+    Display_16_16(14, 0, Chinese_character, 7);
+    Display_16_16(16, 0, Chinese_character, 8);
+    Display_16_16(18, 0, Chinese_character, 9);
+    Display_16_16(20, 0, Chinese_character, 10);
+    Display_16_16(22, 0, Chinese_character, 11);
+    Display_16_16(24, 0, Chinese_character, 12);
+
+
+    Display_Str(0, 3, "EAST RISING TOUCH TEST PROGRAM");
+    Display_Str(7, 5, "PLEASE TOUCH ME!");
+    Display_Str(0, 7, "X:COORDINATES:");
+    Display_Str(0, 9, "Y:COORDINATES:");
+
+    Display_Str(0, 15, "EXIT ");
+
+    char buf[100] = "Sin(2) = ";
+    double v = sin(2);
+    sprintf(buf, "Sin(2) = %06.2f", v);
+    Display_Str(0, 11, buf);
+
+    Delay(1000);
+
+    LcmClear();
+    DisplayDots(0x55, 0xaa);
+    Delay(1000);
+    DisplayDots(0xaa, 0x55);
+    Delay(1000);
+
+    DisplayDots(0x55, 0x55);
+    Delay(1000);
+    DisplayDots(0xaa, 0xaa);
+    Delay(1000);
+
+    DisplayDots(0xff, 0x00);
+    Delay(1000);
+    DisplayDots(0x00, 0xff);
+    Delay(1000);
+    DisplayBMP(0, 0, 240, 128, BMP0);
+    Delay(1500);
+    ReverseDisplayBMP(0, 0, 240, 128, BMP0);
+    Delay(1500);
+
+
 #pragma clang diagnostic pop
 }
 
