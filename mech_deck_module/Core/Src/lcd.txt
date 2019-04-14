@@ -1,4 +1,3 @@
-//----------------------------------------------------------------------
 /*EASTRISING TECHNOLOGY CO,.LTD.*/
 // Module    : ERM240128-2 Series
 // Drive IC  : T6963

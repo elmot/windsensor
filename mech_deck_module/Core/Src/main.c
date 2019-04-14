@@ -120,7 +120,9 @@ int main(void)
 
     radioCheck();
     radioInit();
-    mainLcd();
+    initLcd();
+    splashLcd();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -133,6 +135,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       radioLoop();
+      updateLcd();
       LL_mDelay(200);
 
   }
