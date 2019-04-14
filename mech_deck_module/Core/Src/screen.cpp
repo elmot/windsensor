@@ -3,6 +3,7 @@
 //
 
 #include <memory.h>
+#include <tgmath.h>
 #include "screen.hpp"
 
 
@@ -16,6 +17,9 @@
 
 #define LCM_SET_GRAPH_HOME 0x42
 #define LCM_SET_GRAPH_COLS 0x43
+
+Screen mainScreen;
+AffineTransform affineScreen = AffineTransform(mainScreen);
 
 static void writeCommand0(uint8_t command);
 
@@ -37,7 +41,7 @@ static const uint8_t SPLASH_PICTURE[] = {
 
 static const uint8_t LEFT_BACKGROUND[] = {
 #include "background.txt"
-        };
+};
 
 void initLcd(void) {
     LL_GPIO_ResetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
@@ -72,8 +76,14 @@ void splashLcd(void) {
 }
 
 void updateLcd(void) {
+
+    static float theta = 0.0;
+
     Screen::clearPict();
     Screen::copyPict(0, 0, 16, 128, LEFT_BACKGROUND);
+    affineScreen.reset();
+    affineScreen.rotate(theta += 0.1, 63, 63);
+    affineScreen.line(63, 127, 63, 63, 2, "10001100");
     Screen::displayScreen();
     TIM22->CCR1 = (TIM22->CCR1 + 37) % 99; //todo
 }
@@ -110,10 +120,6 @@ void Screen::displayScreen() {
 #pragma clang diagnostic ignored "-Wunknown-attributes"
 
 void static inline __attribute__((optimize("O0"))) shortDelay() {
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
     __NOP();
     __NOP();
     __NOP();
@@ -201,3 +207,112 @@ void inline Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t
         }
     }
 }
+
+void Screen::pixel(float fX, float fY, int color) {
+    uint16_t x = lroundf(0.5f + fX);
+    uint16_t y = lroundf(0.5f + fY);
+    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
+    uint8_t mask = 0x80U >> (x & 7U);
+    uint8_t *addr = &screen_buffer[(x >> 3U) + (WIDTH_BYTES * y)];
+    if (color) *addr |= mask; else *addr &= (uint8_t) ~mask;
+
+}
+
+void AffineTransform::pixel(float x, float y, int color) {
+    float tX = 0.5f + m00 * x + m01 * y + m02;
+    float tY = 0.5f + m10 * x + m11 * y + m12;
+    screen.pixel(tX, tY, color);
+}
+
+void AffineTransform::reset() {
+    m00 = m11 = 1;
+    m10 = m01 = m02 = m12 = 0;
+}
+
+void AffineTransform::rotate(float theta) {
+    float aSin = sinf(theta);
+    float aCos = cosf(theta);
+    float M0, M1;
+    M0 = m00;
+    M1 = m01;
+    m00 = aCos * M0 + aSin * M1;
+    m01 = -aSin * M0 + aCos * M1;
+    M0 = m10;
+    M1 = m11;
+    m10 = aCos * M0 + aSin * M1;
+    m11 = -aSin * M0 + aCos * M1;
+}
+
+void AffineTransform::translate(float tx, float ty) {
+    m02 = tx * m00 + ty * m01 + m02;
+    m12 = tx * m10 + ty * m11 + m12;
+}
+
+void AffineTransform::rotate(float theta, float anchorx, float anchory) {
+    translate(anchorx, anchory);
+    rotate(theta);
+    translate(-anchorx, -anchory);
+}
+
+void AffineTransform::line(float x1, float y1, float x2, float y2, float width, const char *pattern) {
+    float tX1 = (int) (0.5f + m00 * x1 + m01 * y1 + m02);
+    float tY1 = (int) (0.5f + m10 * x1 + m11 * y1 + m12);
+    float tX2 = (int) (0.5f + m00 * x2 + m01 * y2 + m02);
+    float tY2 = (int) (0.5f + m10 * x2 + m11 * y2 + m12);
+    screen.line(tX1, tY1, tX2, tY2, width, pattern);
+}
+
+AffineTransform::AffineTransform(class Screen &ascreen) : screen(ascreen) {
+    reset();
+}
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
+inline void swap(int &a, int &b) {
+    a = a ^ b;
+    b = a ^ b;
+    a = a ^ b;
+}
+
+#pragma clang diagnostic pop
+
+void Screen::line(float fX1, float fY1, float fX2, float fY2, float fWidth, const char *pattern) {
+    int x1 = lroundf(fX1);
+    int x2 = lroundf(fX2);
+
+    int y1 = lroundf(fY1);
+    int y2 = lroundf(fY2);
+    int width = lroundf(fWidth);
+
+    bool steep = labs(y2 - y1) > labs(x2 - x1);
+    if (steep) {
+        swap(x1, y1);
+        swap(x2, y2);
+    }
+    int deltax = labs(x2 - x1);
+    int deltay = labs(y2 - y1);
+    int err = deltax / 2;
+    int y = y1;
+
+    int inc = (x1 < x2) ? 1 : -1;
+    int ystep = (y1 < y2) ? 1 : -1;
+    const char *patternChar = pattern;
+    for (int x = x1; (x2 - x) * inc >= 0; x += inc) {
+
+        if (*patternChar == 0) {
+            patternChar = pattern;
+        }
+        int color = *(patternChar++) & 1u;
+        for (int d = 0; d < width; d++) {
+            int dy = d - width / 2;
+            if (steep) pixel(y + dy, x, color); else pixel(x, y + dy, color);
+        }
+        err -= deltay;
+        if (err < 0) {
+            y += ystep;
+            err += deltax;
+        }
+    }
+}
+
