@@ -137,6 +137,10 @@ void radioLoop(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+void initLcd(void);
+void splashLcd(void);
+
+void updateLcd(void);
 
 /* USER CODE END Private defines */
 
