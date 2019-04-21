@@ -90,6 +90,10 @@ void radioLoop(void);
 #define DISP_D2_GPIO_Port GPIOC
 #define DISP_D3_Pin LL_GPIO_PIN_3
 #define DISP_D3_GPIO_Port GPIOC
+#define KEY_L_NAVI_Pin LL_GPIO_PIN_0
+#define KEY_L_NAVI_GPIO_Port GPIOA
+#define KEY_L_ANCHOR_Pin LL_GPIO_PIN_1
+#define KEY_L_ANCHOR_GPIO_Port GPIOA
 #define USART_TX_Pin LL_GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin LL_GPIO_PIN_3
@@ -124,6 +128,14 @@ void radioLoop(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin LL_GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define KEY_CANCEL_Pin LL_GPIO_PIN_2
+#define KEY_CANCEL_GPIO_Port GPIOD
+#define KEY_UP_Pin LL_GPIO_PIN_3
+#define KEY_UP_GPIO_Port GPIOB
+#define KEY_DOWN_Pin LL_GPIO_PIN_4
+#define KEY_DOWN_GPIO_Port GPIOB
+#define KEY_OK_Pin LL_GPIO_PIN_5
+#define KEY_OK_GPIO_Port GPIOB
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */

@@ -70,9 +70,9 @@ void splashLcd(void) {
             }
         }
         Screen::displayScreen();
-        LL_mDelay(5);
+        LL_mDelay(1);
     }
-    LL_mDelay(700);
+    LL_mDelay(70);
 }
 
 void updateLcd(void) {
@@ -85,7 +85,6 @@ void updateLcd(void) {
     affineScreen.rotate(theta += 0.1, 63, 63);
     affineScreen.line(63, 127, 63, 63, 2, "10001100");
     Screen::displayScreen();
-    TIM22->CCR1 = (TIM22->CCR1 + 37) % 99; //todo
 }
 
 void lcmClear() {

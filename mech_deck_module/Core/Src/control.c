@@ -37,7 +37,7 @@ nRF24_TXResult tx_res;
 //   pBuf - pointer to the buffer with data to transmit
 //   length - length of the data buffer in bytes
 // return: one of nRF24_TX_xx values
-nRF24_TXResult nRF24_TransmitPacket(uint8_t *pBuf, uint8_t length) {
+nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
     volatile uint32_t wait = nRF24_WAIT_TIMEOUT;
     uint8_t status;
 

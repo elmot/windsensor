@@ -121,6 +121,8 @@ int main(void)
     radioCheck();
     radioInit();
     initLcd();
+    LL_InitTick(SystemCoreClock, 200);
+    LL_SYSTICK_EnableIT();
     splashLcd();
 
   /* USER CODE END 2 */

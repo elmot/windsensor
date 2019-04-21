@@ -58,7 +58,18 @@ UARTS
 | USART1_TX	|  PB6	    | CN10-17    |
 | USART1_RX	|  PB7	    | CN7-21     |
 
-Misc 
+Keys/switches (all set to pull-up)
+---
+|      Name    |  MCPU Pin | Nucleo Pin |
+|--------------|-----------|------------|
+| NAV LIGHT    | PA0	   | CN7-28     |
+| ANCHOR LIGHT | PA1	   | CN7-30     |
+| CANCEL       | PD2	   | CN7-4      |
+| UP           | PB3	   | CN10-31    |
+| DOWN         | PB4	   | CN10-28    |
+| OK           | PB5	   | CN10-30    |
+
+Misc
 ---
 |      Name |  MCPU Pin | Nucleo Pin |
 |-----------|-----------|------------|
@@ -66,3 +77,4 @@ Misc
 |  GRN LED  |  PA5 	    | CN10-11    |  
 
 [Full STM32CubeXM report](mech_deck_module.pdf)
+
