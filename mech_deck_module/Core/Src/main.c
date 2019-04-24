@@ -27,6 +27,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "deck-module.hpp"
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -54,12 +56,12 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void mainLcd(void);
-void initTextMode(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+volatile uint_fast64_t sysTicks = 1;
+
 int __unused _write(int __unused file, char *data, int len) {
     for(;len>0;len--,data++)
     {
@@ -67,6 +69,23 @@ int __unused _write(int __unused file, char *data, int len) {
         LL_USART_TransmitData8(USART2, *data);
     }
     return len;
+}
+
+struct NaviState state;
+
+static void adjustBackLight() {
+    if(state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) {
+        state.backLightPwm += 10;
+        if(state.backLightPwm > 99){
+            state.backLightPwm = 99;
+        }
+    } else  if(state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) {
+        state.backLightPwm -= 10;
+        if(state.backLightPwm < 0){
+            state.backLightPwm = 0;
+        }
+    }
+    LL_TIM_OC_SetCompareCH1(TIM22, 99 - state.backLightPwm);
 }
 
 /* USER CODE END 0 */
@@ -137,8 +156,14 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       radioLoop();
-      updateLcd();
-      LL_mDelay(200);
+      __disable_irq();
+      uint64_t ts = sysTicks;
+      __enable_irq();
+      updateKeyboard(ts);
+      adjustBackLight();
+      updateLcd(ts);
+
+      LL_mDelay(2);
 
   }
 #pragma clang diagnostic pop
@@ -219,6 +244,11 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedValue"
+  file = file;
+  line = line;
+#pragma clang diagnostic pop
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */

@@ -75,10 +75,11 @@ void splashLcd(void) {
     LL_mDelay(70);
 }
 
-void updateLcd(void) {
-
+void updateLcd(uint_fast64_t timeStamp) {
+    static uint_fast64_t lastUpdate = 0;
+    if (timeStamp - lastUpdate < 50) return;
+    lastUpdate = timeStamp;
     static float theta = 0.0;
-
     Screen::clearPict();
     Screen::copyPict(0, 0, 16, 128, LEFT_BACKGROUND);
     affineScreen.reset();

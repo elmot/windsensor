@@ -5,7 +5,7 @@
 #ifndef MECH_DECK_MODULE_KEYBOARD_H
 #define MECH_DECK_MODULE_KEYBOARD_HPP
 
-#include <cstdbool>
+#include <stdbool.h>
 #include "main.h"
 
 enum DeviceState {
@@ -23,31 +23,31 @@ enum LightsState {
 };
 
 
-#define KEY_RELEASED 1
-#define KEY_PRESSED 2
-#define KEY_L_PRESSED 4
-#define KEY_XL_PRESSED 8
-#define KEY_PRESS_E 16
-#define KEY_REPEAT_E 32
-#define KEY_RELEASE_E 64
+#define KEY_RELEASED     0b000000u
+#define KEY_PRESSED      0b000010u
+#define KEY_L_PRESSED    0b000100u
+#define KEY_XL_PRESSED   0b001000u
+#define KEY_PRESS_E      0b010000u
+#define KEY_REPEAT_E     0b100000u
+#define KEY_RELEASE_E    0b000001u
 
 struct NaviState {
-public:
-    uint8_t keyup;
-    uint8_t keydown;
-    uint8_t keyok;
-    uint8_t keycancel;
+//public:
+    uint8_t keyUp;
+    uint8_t keyDown;
+    uint8_t keyOk;
+    uint8_t keyCancel;
 
-    DeviceState gpsState;
-    DeviceState anemSatte;
+    enum DeviceState gpsState;
+    enum DeviceState anemSatte;
 
-    LightsState lights;
+    enum LightsState lights;
 
     /***
      * @brief value 0-100
      *
      */
-    uint8_t backLightPwm;
+    int8_t backLightPwm;
 
     double lat;
     double lon;
@@ -57,13 +57,9 @@ public:
     double windSpd;
     double windAngle;
 
-
-private:
     uint_fast64_t lastPosTS;
     uint_fast64_t lastWindTS;
     uint_fast64_t lastScreenTS;
-
-
 } ;
 
 extern struct NaviState state;

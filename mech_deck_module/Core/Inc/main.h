@@ -152,7 +152,14 @@ void radioLoop(void);
 void initLcd(void);
 void splashLcd(void);
 
-void updateLcd(void);
+void updateLcd(uint_fast64_t timestamp);
+
+extern volatile uint_fast64_t sysTicks;
+inline void sysTimerRoutine() {
+    sysTicks++;
+}
+
+void updateKeyboard(uint_fast64_t timeStamp);
 
 /* USER CODE END Private defines */
 

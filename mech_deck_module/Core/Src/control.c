@@ -124,7 +124,7 @@ void radioLoop(void) {
     // Print a payload
 //    nRF24_payload[payload_length] = 0;
 //    printf("PAYLOAD:>%s< ... TX: ", nRF24_payload);
-    printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
+    //skipped-- printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
 
     // Transmit a packet
     tx_res = nRF24_TransmitPacket(button, 6);
@@ -134,23 +134,23 @@ void radioLoop(void) {
     otx_arc_cnt = (otx & nRF24_MASK_ARC_CNT); // auto retransmissions counter
     switch (tx_res) {
         case nRF24_TX_SUCCESS:
-            printf("OK");
+            //skipped-- printf("OK");
             break;
         case nRF24_TX_TIMEOUT:
-            printf("TIMEOUT");
+            //skipped-- printf("TIMEOUT");
             break;
         case nRF24_TX_MAXRT:
-            printf("MAX RETRANSMIT");
+            //skipped-- printf("MAX RETRANSMIT");
             packets_lost += otx_plos_cnt;
             nRF24_ResetPLOS();
             break;
         default:
-            printf("ERROR");
+            //skipped-- printf("ERROR");
             break;
     }
     nRF24_payload[payload_length] = 0;
 
-    printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+    //skipped-- printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
     int buttonReport, agcReport, angleReport, speedReport;
     sscanf((const char *) nRF24_payload, "%x;%x;%x;%x", &buttonReport, &agcReport, &angleReport, &speedReport);
 
@@ -158,7 +158,7 @@ void radioLoop(void) {
 
     snprintf(nmea, sizeof(nmea), "$GPRMC,123519,A,6022.0962,N,02829.173,E,012.4,064.4,230119,003.1,W");
     appendChecksumEol(nmea, sizeof(nmea));
-    printf(nmea);
+    //skipped-- printf(nmea);
 
     char *lr;
     int angle;
@@ -175,7 +175,7 @@ void radioLoop(void) {
     }
     snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,12.2,N,6.27,M,22.6,K", angle, lr);
     appendChecksumEol(nmea, sizeof(nmea));
-    printf(nmea);
+    //skipped-- printf(nmea);
 
     // Wait ~0.5s
     if (payload_length > 0) {
@@ -264,16 +264,16 @@ void radioInit() {// Initialize the nRF24L01 to its default state
 }
 
 void radioCheck() {
-    printf("\r\nSTM32L432KC is online.\r\n");
+    //skipped-- printf("\r\nSTM32L432KC is online.\r\n");
     Delay_ms(100);
 
     // RX/TX disabled
     nRF24_CE_L();
 
     // Configure the nRF24L01+
-    printf("nRF24L01+ check: ");
+    //skipped-- printf("nRF24L01+ check: ");
     if (!nRF24_Check()) {
         Error_Handler();
     }
-    printf("OK\r\n");
+    //skipped-- printf("OK\r\n");
 }
