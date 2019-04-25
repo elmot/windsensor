@@ -2,7 +2,6 @@
 // Created by Ilia.Motornyi on 14/04/2019.
 //
 
-#include <memory.h>
 #include <tgmath.h>
 #include "screen.hpp"
 

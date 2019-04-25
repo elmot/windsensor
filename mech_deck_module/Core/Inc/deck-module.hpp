@@ -5,7 +5,6 @@
 #ifndef MECH_DECK_MODULE_KEYBOARD_H
 #define MECH_DECK_MODULE_KEYBOARD_HPP
 
-#include <stdbool.h>
 #include "main.h"
 
 enum DeviceState {
@@ -39,7 +38,7 @@ struct NaviState {
     uint8_t keyCancel;
 
     enum DeviceState gpsState;
-    enum DeviceState anemSatte;
+    enum DeviceState anemState;
 
     enum LightsState lights;
 
@@ -63,5 +62,7 @@ struct NaviState {
 } ;
 
 extern struct NaviState state;
+
+enum DeviceState radioCheck();
 
 #endif //MECH_DECK_MODULE_KEYBOARD_H

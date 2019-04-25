@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <deck-module.hpp>
 #include "support.h"
 #include "nrf24.h"
 //
@@ -8,19 +8,16 @@
 
 uint8_t nRF24_payload[33];
 
+bool radioDebug = false;
+
 void Toggle_LED() {
     LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 }
 
-// Pipe number
-nRF24_RXResult pipe;
-
-uint32_t i, j, k;
-
 // Length of received payload
 uint8_t payload_length;
 
-#define nRF24_WAIT_TIMEOUT         (uint32_t)0x000FFFFF
+#define nRF24_WAIT_TIMEOUT         0x000FFFFFu
 
 // Result of packet transmission
 typedef enum {
@@ -45,7 +42,7 @@ nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
     nRF24_CE_L();
 
     // Transfer a data from the specified buffer to the TX FIFO
-    nRF24_WritePayload(pBuf, length);
+    nRF24_WritePayload((uint8_t *)pBuf, length);
 
     // Start a transmission by asserting CE pin (must be held at least 10us)
     nRF24_CE_H();
@@ -56,7 +53,7 @@ nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
     // note: this solution is far from perfect, better to use IRQ instead of polling the status
     do {
         status = nRF24_GetStatus();
-        if (status & (nRF24_FLAG_TX_DS | nRF24_FLAG_MAX_RT)) {
+        if (status & (uint8_t)(nRF24_FLAG_TX_DS | nRF24_FLAG_MAX_RT)) {
             break;
         }
     } while (wait--);
@@ -68,9 +65,6 @@ nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
         // Timeout
         return nRF24_TX_TIMEOUT;
     }
-
-    // Check the flags in STATUS register
-    printf("[%02x]", status);
 
     // Clear pending IRQ flags
     nRF24_ClearIRQFlags();
@@ -91,7 +85,7 @@ nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
     return nRF24_TX_ERROR;
 }
 
-static char *button = "B1";
+static char button[] = "B1";
 
 void checkButtons();
 
@@ -107,50 +101,33 @@ void radioLoop(void) {
     static uint8_t otx_arc_cnt; // retransmit count
 
 
-    // The main loop
-    static int j = 33;
-
-//    payload_length = (uint8_t) (2 + (j + j / 10) % 7);
-//    payload_length = 4;
-
-    // Prepare data packet
-/*
-    for (i = 0; i < payload_length; i++) {
-        nRF24_payload[i] = (uint8_t) j++;
-        if (j > 'z') j = 33;
-    }
-*/
-
-    // Print a payload
-//    nRF24_payload[payload_length] = 0;
-//    printf("PAYLOAD:>%s< ... TX: ", nRF24_payload);
-    //skipped-- printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
+    if (radioDebug) printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
 
     // Transmit a packet
     tx_res = nRF24_TransmitPacket(button, 6);
     otx = nRF24_GetRetransmitCounters();
     nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
-    otx_plos_cnt = (otx & nRF24_MASK_PLOS_CNT) >> 4; // packets lost counter
+    otx_plos_cnt = (otx & nRF24_MASK_PLOS_CNT) >> 4u; // packets lost counter
     otx_arc_cnt = (otx & nRF24_MASK_ARC_CNT); // auto retransmissions counter
     switch (tx_res) {
         case nRF24_TX_SUCCESS:
-            //skipped-- printf("OK");
+            if (radioDebug) printf("OK");
             break;
         case nRF24_TX_TIMEOUT:
-            //skipped-- printf("TIMEOUT");
+            if (radioDebug) printf("TIMEOUT");
             break;
         case nRF24_TX_MAXRT:
-            //skipped-- printf("MAX RETRANSMIT");
+            if (radioDebug) printf("MAX RETRANSMIT");
             packets_lost += otx_plos_cnt;
             nRF24_ResetPLOS();
             break;
         default:
-            //skipped-- printf("ERROR");
+            if (radioDebug) printf("ERROR");
             break;
     }
     nRF24_payload[payload_length] = 0;
 
-    //skipped-- printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+    if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
     int buttonReport, agcReport, angleReport, speedReport;
     sscanf((const char *) nRF24_payload, "%x;%x;%x;%x", &buttonReport, &agcReport, &angleReport, &speedReport);
 
@@ -158,9 +135,9 @@ void radioLoop(void) {
 
     snprintf(nmea, sizeof(nmea), "$GPRMC,123519,A,6022.0962,N,02829.173,E,012.4,064.4,230119,003.1,W");
     appendChecksumEol(nmea, sizeof(nmea));
-    //skipped-- printf(nmea);
+    if (radioDebug) printf(nmea);
 
-    char *lr;
+    const char *lr;
     int angle;
     if (agcReport == 0x80 || agcReport == 0) {
         lr = "";
@@ -175,7 +152,7 @@ void radioLoop(void) {
     }
     snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,12.2,N,6.27,M,22.6,K", angle, lr);
     appendChecksumEol(nmea, sizeof(nmea));
-    //skipped-- printf(nmea);
+    if (radioDebug) printf(nmea);
 
     // Wait ~0.5s
     if (payload_length > 0) {
@@ -186,9 +163,9 @@ void radioLoop(void) {
 }
 
 void appendChecksumEol(char *nmea, int maxLen) {
-    int sum = 0;
+    uint sum = 0;
     int pos;
-    if ((nmea == NULL) || (*nmea == 0)) return;
+    if ((nmea == nullptr) || (*nmea == 0)) return;
     for (pos = 1; nmea[pos] != 0; pos++) {
         sum ^= nmea[pos];
     }
@@ -263,17 +240,20 @@ void radioInit() {// Initialize the nRF24L01 to its default state
     nRF24_SetPowerMode(nRF24_PWR_UP);
 }
 
-void radioCheck() {
-    //skipped-- printf("\r\nSTM32L432KC is online.\r\n");
+DeviceState radioCheck() {
+    if (radioDebug) printf("\r\nSTM32L432KC is online.\r\n");
     Delay_ms(100);
 
     // RX/TX disabled
     nRF24_CE_L();
 
     // Configure the nRF24L01+
-    //skipped-- printf("nRF24L01+ check: ");
+    if (radioDebug) printf("nRF24L01+ check: ");
     if (!nRF24_Check()) {
-        Error_Handler();
+        if (radioDebug) printf("SPI ERROR\n");
+        state.anemState = CONN_FAIL;
     }
-    //skipped-- printf("OK\r\n");
+    if (radioDebug) printf("OK\r\n");
+    state.anemState = DATA_NO_FIX;
+    return state.anemState;
 }

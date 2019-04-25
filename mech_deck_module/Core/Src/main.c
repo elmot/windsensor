@@ -63,8 +63,7 @@ void SystemClock_Config(void);
 volatile uint_fast64_t sysTicks = 1;
 
 int __unused _write(int __unused file, char *data, int len) {
-    for(;len>0;len--,data++)
-    {
+    for (; len > 0; len--, data++) {
         while (!LL_USART_IsActiveFlag_TXE(USART2)) {}
         LL_USART_TransmitData8(USART2, *data);
     }
@@ -72,21 +71,6 @@ int __unused _write(int __unused file, char *data, int len) {
 }
 
 struct NaviState state;
-
-static void adjustBackLight() {
-    if(state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) {
-        state.backLightPwm += 10;
-        if(state.backLightPwm > 99){
-            state.backLightPwm = 99;
-        }
-    } else  if(state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) {
-        state.backLightPwm -= 10;
-        if(state.backLightPwm < 0){
-            state.backLightPwm = 0;
-        }
-    }
-    LL_TIM_OC_SetCompareCH1(TIM22, 99 - state.backLightPwm);
-}
 
 /* USER CODE END 0 */
 
@@ -97,7 +81,6 @@ static void adjustBackLight() {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -130,43 +113,16 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-    /* Enable output channel 1 */
-    LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
-    /* Enable counter */
-    LL_TIM_EnableCounter(TIM22);
-    /* Force update generation */
-    LL_TIM_GenerateEvent_UPDATE(TIM22);
-
-    radioCheck();
-    radioInit();
-    initLcd();
-    LL_InitTick(SystemCoreClock, 200);
-    LL_SYSTICK_EnableIT();
-    splashLcd();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
-  while (1)
-  {
+    mainLoop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      radioLoop();
-      __disable_irq();
-      uint64_t ts = sysTicks;
-      __enable_irq();
-      updateKeyboard(ts);
-      adjustBackLight();
-      updateLcd(ts);
-
-      LL_mDelay(2);
-
-  }
-#pragma clang diagnostic pop
+    // moved to mainLoop()
   /* USER CODE END 3 */
 }
 
@@ -228,8 +184,20 @@ void SystemClock_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-
+    /* User can add his own implementation to report the HAL error return state */
+    LL_RCC_HSI_Enable();
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
+    LL_GPIO_SetPinMode(LD2_GPIO_Port, LD2_Pin, LL_GPIO_MODE_OUTPUT);
+    LL_Init1msTick(16000000);
+    __disable_irq();
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while (1) {
+        LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        LL_mDelay(50);
+    }
+#pragma clang diagnostic pop
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -246,11 +214,11 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "UnusedValue"
-  file = file;
-  line = line;
+    file = file;
+    line = line;
 #pragma clang diagnostic pop
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    /* User can add his own implementation to report the file name and line number,
+       tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

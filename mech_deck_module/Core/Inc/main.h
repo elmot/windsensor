@@ -51,6 +51,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdbool.h>
+#include <memory.h>
 
 /* USER CODE END Includes */
 
@@ -73,7 +75,6 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void radioCheck(void);
 void radioInit(void);
 void radioLoop(void);
 
@@ -160,6 +161,9 @@ inline void sysTimerRoutine() {
 }
 
 void updateKeyboard(uint_fast64_t timeStamp);
+
+void mainLoop()__attribute__((noreturn));
+
 
 /* USER CODE END Private defines */
 
