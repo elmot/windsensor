@@ -53,8 +53,8 @@ UARTS
 |-----------|-----------|------------|
 | USART2_TX |  PA2	    | CN10-35    |
 | USART2_RX |  PA3	    | CN10-37    |
-| LPUART1_TX|  PC10     | CN7-1      |
-| LPUART1_RX|  PC11     | CN7-2      |
+| UART4_TX  |  PC10     | CN7-1      |
+| UART4_RX  |  PC11     | CN7-2      |
 | USART1_TX	|  PB6	    | CN10-17    |
 | USART1_RX	|  PB7	    | CN7-21     |
 

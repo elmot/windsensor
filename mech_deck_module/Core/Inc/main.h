@@ -28,21 +28,20 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32l0xx_ll_lpuart.h"
-#include "stm32l0xx_ll_rcc.h"
-#include "stm32l0xx_ll_crs.h"
-#include "stm32l0xx_ll_bus.h"
-#include "stm32l0xx_ll_system.h"
-#include "stm32l0xx_ll_exti.h"
-#include "stm32l0xx_ll_cortex.h"
-#include "stm32l0xx_ll_utils.h"
-#include "stm32l0xx_ll_pwr.h"
-#include "stm32l0xx_ll_dma.h"
-#include "stm32l0xx_ll_spi.h"
-#include "stm32l0xx_ll_tim.h"
-#include "stm32l0xx_ll_usart.h"
-#include "stm32l0xx.h"
-#include "stm32l0xx_ll_gpio.h"
+#include "stm32l4xx_ll_crs.h"
+#include "stm32l4xx_ll_rcc.h"
+#include "stm32l4xx_ll_bus.h"
+#include "stm32l4xx_ll_system.h"
+#include "stm32l4xx_ll_exti.h"
+#include "stm32l4xx_ll_cortex.h"
+#include "stm32l4xx_ll_utils.h"
+#include "stm32l4xx_ll_pwr.h"
+#include "stm32l4xx_ll_dma.h"
+#include "stm32l4xx_ll_spi.h"
+#include "stm32l4xx_ll_tim.h"
+#include "stm32l4xx_ll_usart.h"
+#include "stm32l4xx.h"
+#include "stm32l4xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
@@ -63,7 +62,9 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+#define DISP_BG_TIM TIM3
+#define DISP_BG_TIM_SETPULSE LL_TIM_OC_SetCompareCH1
+#define DISP_BG_TIM_CHANNEL LL_TIM_CHANNEL_CH1
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -101,8 +102,6 @@ void radioLoop(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin LL_GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
-#define DISP_BG_Pin LL_GPIO_PIN_6
-#define DISP_BG_GPIO_Port GPIOA
 #define DISP_D4_Pin LL_GPIO_PIN_4
 #define DISP_D4_GPIO_Port GPIOC
 #define DISP_D5_Pin LL_GPIO_PIN_5
@@ -155,9 +154,15 @@ void splashLcd(void);
 
 void updateLcd(uint_fast64_t timestamp);
 
-extern volatile uint_fast64_t sysTicks;
-inline void sysTimerRoutine() {
-    sysTicks++;
+extern volatile uint_fast64_t _sysTicks;
+inline void _sysTimerRoutine() {
+    _sysTicks++;
+}
+static inline uint_fast64_t sysTicks() {
+    __disable_irq();
+    uint_fast64_t result = _sysTicks;
+    __enable_irq();
+    return result;
 }
 
 void updateKeyboard(uint_fast64_t timeStamp);

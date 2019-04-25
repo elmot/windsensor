@@ -15,20 +15,20 @@ static void adjustBackLight() {
             state.backLightPwm = 0;
         }
     }
-    LL_TIM_OC_SetCompareCH1(TIM22, 99 - state.backLightPwm);
+    DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - state.backLightPwm);
 }
 
 void mainLoop() {
     /* Enable output channel 1 */
-    LL_TIM_CC_EnableChannel(TIM22, LL_TIM_CHANNEL_CH1);
+    LL_TIM_CC_EnableChannel(DISP_BG_TIM, DISP_BG_TIM_CHANNEL);
     /* Enable counter */
-    LL_TIM_EnableCounter(TIM22);
+    LL_TIM_EnableCounter(DISP_BG_TIM);
     /* Force update generation */
-    LL_TIM_GenerateEvent_UPDATE(TIM22);
+    LL_TIM_GenerateEvent_UPDATE(DISP_BG_TIM);
 
+    initLcd();
     radioCheck();
     radioInit();
-    initLcd();
     LL_InitTick(SystemCoreClock, 200);
     LL_SYSTICK_EnableIT();
     splashLcd();
@@ -46,7 +46,7 @@ void mainLoop() {
         /* USER CODE BEGIN 3 */
         radioLoop();
         __disable_irq();
-        uint64_t ts = sysTicks;
+        uint64_t ts = sysTicks();
         __enable_irq();
         updateKeyboard(ts);
         adjustBackLight();

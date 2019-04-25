@@ -126,13 +126,69 @@ void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
     __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
 }
 
 #pragma clang diagnostic pop
 
 void static waitForBits(uint32_t bits) {
     MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0x0000U);
+//    LL_GPIO_WriteOutputPort(DISP_D0_GPIO_Port,0xFF);
     uint b;
+    uint_fast64_t time = sysTicks();
     do {
         LL_GPIO_SetOutputPin(DISP_CD_GPIO_Port, DISP_CD_Pin);
         LL_GPIO_ResetOutputPin(DISP_RD_GPIO_Port, DISP_RD_Pin);
@@ -140,6 +196,7 @@ void static waitForBits(uint32_t bits) {
         b = LL_GPIO_ReadInputPort(DISP_D0_GPIO_Port);
         LL_GPIO_SetOutputPin(DISP_RD_GPIO_Port, DISP_RD_Pin);
         shortDelay();
+        if(sysTicks() - time >10) Error_Handler();
     } while ((b & bits) != bits);
 
     MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0b0101010101010101U);
@@ -188,7 +245,7 @@ void writeCommand2(uint8_t command, u_int8_t param1, u_int8_t param2) {
 }
 
 void Screen::bgBrightness(uint16_t brightness) {
-    TIM22->CCR1 = brightness;
+    DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - brightness);
 }
 
 void inline Screen::copyPict(const uint8_t *background) {
