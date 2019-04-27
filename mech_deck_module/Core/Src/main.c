@@ -73,6 +73,30 @@ int __unused _write(int __unused file, char *data, int len) {
 
 struct NaviState state;
 
+static inline bool checkTime( uint64_t started) {
+    if(sysTicks() - started < 4) {
+        if(state.anemState == CONN_FAIL) {
+            state.anemState = DATA_NO_FIX;
+        }
+        return true;
+    } else {
+        state.anemState = CONN_FAIL;
+        return false;
+    }
+}
+
+uint8_t nRF24_LL_RW(uint8_t data) {
+    LL_SPI_SetRxFIFOThreshold(NRF_SPI, LL_SPI_RX_FIFO_TH_QUARTER);
+    LL_SPI_Enable(NRF_SPI);
+    // Wait until TX buffer is empty
+    uint_fast64_t time = sysTicks();
+    while (LL_SPI_IsActiveFlag_BSY(NRF_SPI) && checkTime(time));
+    while (!LL_SPI_IsActiveFlag_TXE(NRF_SPI) && checkTime(time));
+    LL_SPI_TransmitData8(NRF_SPI, data);
+    while (!LL_SPI_IsActiveFlag_RXNE(NRF_SPI) && checkTime(time));
+    return LL_SPI_ReceiveData8(NRF_SPI);
+}
+
 /* USER CODE END 0 */
 
 /**

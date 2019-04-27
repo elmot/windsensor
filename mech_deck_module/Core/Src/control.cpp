@@ -1,5 +1,4 @@
 #include <deck-module.hpp>
-#include "support.h"
 #include "nrf24.h"
 //
 // Created by ilia.motornyi on 13-Dec-18.
@@ -242,7 +241,7 @@ void radioInit() {// Initialize the nRF24L01 to its default state
 
 DeviceState radioCheck() {
     if (radioDebug) printf("\r\nSTM32L432KC is online.\r\n");
-    Delay_ms(100);
+    msDelay(100);
 
     // RX/TX disabled
     nRF24_CE_L();

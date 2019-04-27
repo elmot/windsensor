@@ -65,6 +65,9 @@ extern "C" {
 #define DISP_BG_TIM TIM3
 #define DISP_BG_TIM_SETPULSE LL_TIM_OC_SetCompareCH1
 #define DISP_BG_TIM_CHANNEL LL_TIM_CHANNEL_CH1
+
+#define NRF_SPI SPI2
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -78,6 +81,11 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void radioInit(void);
 void radioLoop(void);
+
+//delay in milliseconds
+inline void msDelay(int delay) {
+    LL_mDelay(delay / 5); //we have 200Hz system timer
+}
 
 /* USER CODE END EFP */
 
@@ -155,7 +163,7 @@ void splashLcd(void);
 void updateLcd(uint_fast64_t timestamp);
 
 extern volatile uint_fast64_t _sysTicks;
-inline void _sysTimerRoutine() {
+static inline void _sysTimerRoutine() {
     _sysTicks++;
 }
 static inline uint_fast64_t sysTicks() {

@@ -26,11 +26,12 @@ void mainLoop() {
     /* Force update generation */
     LL_TIM_GenerateEvent_UPDATE(DISP_BG_TIM);
 
+    LL_InitTick(SystemCoreClock, 200);
+    LL_SYSTICK_EnableIT();
+
     initLcd();
     radioCheck();
     radioInit();
-    LL_InitTick(SystemCoreClock, 200);
-    LL_SYSTICK_EnableIT();
     splashLcd();
 
     /* USER CODE END 2 */
@@ -52,7 +53,7 @@ void mainLoop() {
         adjustBackLight();
         updateLcd(ts);
 
-        LL_mDelay(2);
+        msDelay(10);
 
     }
 #pragma clang diagnostic pop

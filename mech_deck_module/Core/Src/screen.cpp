@@ -3,6 +3,7 @@
 //
 
 #include <tgmath.h>
+#include <deck-module.hpp>
 #include "screen.hpp"
 
 
@@ -17,8 +18,8 @@
 #define LCM_SET_GRAPH_HOME 0x42
 #define LCM_SET_GRAPH_COLS 0x43
 
-Screen mainScreen;
-AffineTransform affineScreen = AffineTransform(mainScreen);
+MaskedScreen maskedScreen = MaskedScreen();
+AffineTransform affineScreen = AffineTransform(maskedScreen);
 
 static void writeCommand0(uint8_t command);
 
@@ -32,6 +33,8 @@ static void lcmClear();
 
 static void locateGraphZero();
 
+void dashedArrow();
+
 static uint8_t screen_buffer[WIDTH_BYTES * HEIGHT];
 
 static const uint8_t SPLASH_PICTURE[] = {
@@ -42,11 +45,15 @@ static const uint8_t LEFT_BACKGROUND[] = {
 #include "background.txt"
 };
 
+static const uint8_t FONT[] = {
+#include "font.txt"
+};
+
 void initLcd(void) {
     LL_GPIO_ResetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
-    LL_mDelay(50);
+    msDelay(50);
     LL_GPIO_SetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
-    LL_mDelay(50);
+    msDelay(50);
     writeCommand2(LCM_SET_TEXT_HOME, 0, 0x8);
     writeCommand2(LCM_SET_TEXT_COLS, WIDTH_BYTES, 0);
     writeCommand2(LCM_SET_GRAPH_HOME, 0, 0);
@@ -69,9 +76,9 @@ void splashLcd(void) {
             }
         }
         Screen::displayScreen();
-        LL_mDelay(1);
+        msDelay(1);
     }
-    LL_mDelay(70);
+    msDelay(70);
 }
 
 void updateLcd(uint_fast64_t timeStamp) {
@@ -83,8 +90,32 @@ void updateLcd(uint_fast64_t timeStamp) {
     Screen::copyPict(0, 0, 16, 128, LEFT_BACKGROUND);
     affineScreen.reset();
     affineScreen.rotate(theta += 0.1, 63, 63);
-    affineScreen.line(63, 127, 63, 63, 2, "10001100");
+    dashedArrow();
+    switch (state.anemState) {
+        case OK:break;
+        case CONN_FAIL:
+            Screen::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
+            break;
+        default:
+            Screen::copyPict(6, 38, 4, 32, &FONT[2 * 32 * 4]);
+            break;
+
+    }
     Screen::displayScreen();
+}
+
+void dashedArrow() {
+//    affineScreen.line(63, 127, 63, 63, 2, "10001100");
+    for (int i = 63; i < 128; i += 4) {
+        affineScreen.pixel(63, i, 1);
+        affineScreen.pixel(64, i, 1);
+        affineScreen.pixel(63, i + 1, 1);
+        affineScreen.pixel(64, i + 1, 1);
+        affineScreen.pixel(63, i + 2, 0);
+        affineScreen.pixel(64, i + 2, 0);
+        affineScreen.pixel(63, i + 3, 0);
+        affineScreen.pixel(64, i + 3, 0);
+    }
 }
 
 void lcmClear() {
@@ -180,13 +211,26 @@ void static inline __attribute__((optimize("O0"))) shortDelay() {
     __NOP();
     __NOP();
     __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
 }
 
 #pragma clang diagnostic pop
 
 void static waitForBits(uint32_t bits) {
     MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0x0000U);
-//    LL_GPIO_WriteOutputPort(DISP_D0_GPIO_Port,0xFF);
     uint b;
     uint_fast64_t time = sysTicks();
     do {
@@ -196,7 +240,7 @@ void static waitForBits(uint32_t bits) {
         b = LL_GPIO_ReadInputPort(DISP_D0_GPIO_Port);
         LL_GPIO_SetOutputPin(DISP_RD_GPIO_Port, DISP_RD_Pin);
         shortDelay();
-        if(sysTicks() - time >10) Error_Handler();
+        if (sysTicks() - time > 10) Error_Handler();
     } while ((b & bits) != bits);
 
     MODIFY_REG(DISP_D0_GPIO_Port->MODER, 0xFFFFU, 0b0101010101010101U);
@@ -256,10 +300,14 @@ void inline Screen::clearPict() {
     memset(screen_buffer, 0, HEIGHT * WIDTH_BYTES);
 }
 
-void inline Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict) {
+void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict) {
+    copyPict(xBytes, y, wBytes, h, 0, pict);
+}
+
+void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMask, const uint8_t *pict) {
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
-            screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] = pict[iy * wBytes + ix];
+            screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] = pict[iy * wBytes + ix] ^ xorMask;
         }
     }
 }
@@ -372,3 +420,8 @@ void Screen::line(float fX1, float fY1, float fX2, float fY2, float fWidth, cons
     }
 }
 
+void MaskedScreen::pixel(float x, float y, int color) {
+    if ((x < 39) || (x > 87) || (y > 70) || (y < 37)) {
+        Screen::pixel(x, y, color);
+    }
+}

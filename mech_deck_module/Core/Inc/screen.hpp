@@ -17,26 +17,29 @@ public:
 
     void static clearPict();
 
+    void static copyPict(int xBytes, int y, int wBytes, int h, uint8_t xorMask, const uint8_t *pict);
+
     void static copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict);
 
     static const uint16_t BG_MAX = 0;
-     static const uint16_t BG_MIN = 99;
+    static const uint16_t BG_MIN = 99;
 
     virtual void pixel(float x, float y, int color);
-
-    virtual void pixel(float x, float y) { pixel(x, y, 1); };
 
     virtual void line(float x1, float y1, float x2, float y2, float width, const char *pattern);
 
 };
 
+class MaskedScreen : public Screen {
+public:
+    void pixel(float x, float y, int color) override;
+};
 
-class AffineTransform: Screen {
+class AffineTransform : public Screen {
 public:
     explicit AffineTransform(Screen &screen);
 
-public:
-    void pixel(float x, float y, int color) override;
+    void pixel(float x, float y, int color) override ;
 
     void line(float x1, float y1, float x2, float y2, float width, const char *pattern) override;
 
@@ -89,7 +92,7 @@ private:
      *
      * @serial
      */
-    float m12;
+    float m12 = 0;
 
     Screen &screen;
 };
