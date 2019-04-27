@@ -33,7 +33,7 @@ nRF24_TXResult tx_res;
 //   pBuf - pointer to the buffer with data to transmit
 //   length - length of the data buffer in bytes
 // return: one of nRF24_TX_xx values
-nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
+nRF24_TXResult nRF24_TransmitPacket(const void *pBuf, uint8_t length) {
     volatile uint32_t wait = nRF24_WAIT_TIMEOUT;
     uint8_t status;
 
@@ -84,8 +84,6 @@ nRF24_TXResult nRF24_TransmitPacket(void *pBuf, uint8_t length) {
     return nRF24_TX_ERROR;
 }
 
-static char button[] = "B1";
-
 void checkButtons();
 
 void appendChecksumEol(char *nmea, int maxLen);
@@ -98,8 +96,19 @@ void radioLoop(void) {
     static uint8_t otx;
     static uint8_t otx_plos_cnt; // lost packet count
     static uint8_t otx_arc_cnt; // retransmit count
+    const void * button;
 
 
+    switch (state.lights) {
+        case ANCHOR:
+            button = "B2";
+            break;
+        case NAVI:
+            button = "B3";
+            break;
+        default:
+            button = "B1";
+    }
     if (radioDebug) printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
 
     // Transmit a packet
@@ -110,17 +119,21 @@ void radioLoop(void) {
     otx_arc_cnt = (otx & nRF24_MASK_ARC_CNT); // auto retransmissions counter
     switch (tx_res) {
         case nRF24_TX_SUCCESS:
+            state.anemState = OK;
             if (radioDebug) printf("OK");
             break;
         case nRF24_TX_TIMEOUT:
+            state.anemState = CONN_FAIL;
             if (radioDebug) printf("TIMEOUT");
             break;
         case nRF24_TX_MAXRT:
+            state.anemState = DATA_NO_FIX;
             if (radioDebug) printf("MAX RETRANSMIT");
             packets_lost += otx_plos_cnt;
             nRF24_ResetPLOS();
             break;
         default:
+            state.anemState = CONN_FAIL;
             if (radioDebug) printf("ERROR");
             break;
     }

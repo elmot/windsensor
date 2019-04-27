@@ -40,11 +40,17 @@ void mainLoop() {
     /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
-    while (true)
-    {
+    while (true) {
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
+        if (!LL_GPIO_IsInputPinSet(KEY_L_ANCHOR_GPIO_Port, KEY_L_ANCHOR_Pin)) {
+            state.lights = ANCHOR;
+        } else if (!LL_GPIO_IsInputPinSet(KEY_L_NAVI_GPIO_Port, KEY_L_NAVI_Pin)) {
+            state.lights = NAVI;
+        } else {
+            state.lights = OFF;
+        }
         radioLoop();
         __disable_irq();
         uint64_t ts = sysTicks();
