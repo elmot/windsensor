@@ -109,7 +109,7 @@ void radioLoop() {
 
         nRF24_payload[payload_length] = 0;
         printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
-        lamp = (char) (nRF24_payload[1] & 1);
+        lamp = (char) (nRF24_payload[1] & 1u);
         HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,lamp);
     }
 }

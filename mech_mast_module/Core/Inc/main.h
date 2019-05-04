@@ -75,8 +75,8 @@ extern char *reply;
 #define NAVI_GPIO_Port GPIOB
 #define ANCHOR_Pin GPIO_PIN_13
 #define ANCHOR_GPIO_Port GPIOB
-#define DECK_Pin GPIO_PIN_14
-#define DECK_GPIO_Port GPIOB
+#define LIGHT_ENA_Pin GPIO_PIN_14
+#define LIGHT_ENA_GPIO_Port GPIOB
 #define WIND_TICK_Pin GPIO_PIN_8
 #define WIND_TICK_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */

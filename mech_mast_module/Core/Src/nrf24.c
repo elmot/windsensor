@@ -211,7 +211,7 @@ void nRF24_SetRFChannel(uint8_t channel) {
 // note: zero arc value means that the automatic retransmission disabled
 void nRF24_SetAutoRetr(uint8_t ard, uint8_t arc) {
 	// Set auto retransmit settings (SETUP_RETR register)
-	nRF24_WriteReg(nRF24_REG_SETUP_RETR, (uint8_t)((ard << 4) | (arc & nRF24_MASK_RETR_ARC)));
+	nRF24_WriteReg(nRF24_REG_SETUP_RETR, ((ard << 4u) | (arc & nRF24_MASK_RETR_ARC)));
 }
 
 // Set of address widths
@@ -299,7 +299,7 @@ void nRF24_SetRXPipe(uint8_t pipe, uint8_t aa_state, uint8_t payload_len) {
 	uint8_t reg;
 
 	// Enable the specified pipe (EN_RXADDR register)
-	reg = (nRF24_ReadReg(nRF24_REG_EN_RXADDR) | (1 << pipe)) & nRF24_MASK_EN_RX;
+	reg = (nRF24_ReadReg(nRF24_REG_EN_RXADDR) | (1u << pipe)) & nRF24_MASK_EN_RX;
 	nRF24_WriteReg(nRF24_REG_EN_RXADDR, reg);
 
 	// Set RX payload length (RX_PW_Px register)
@@ -308,9 +308,9 @@ void nRF24_SetRXPipe(uint8_t pipe, uint8_t aa_state, uint8_t payload_len) {
 	// Set auto acknowledgment for a specified pipe (EN_AA register)
 	reg = nRF24_ReadReg(nRF24_REG_EN_AA);
 	if (aa_state == nRF24_AA_ON) {
-		reg |=  (1 << pipe);
+		reg |=  (1u << pipe);
 	} else {
-		reg &= ~(1 << pipe);
+		reg &= ~(1u << pipe);
 	}
 	nRF24_WriteReg(nRF24_REG_EN_AA, reg);
 }
@@ -322,7 +322,7 @@ void nRF24_ClosePipe(uint8_t pipe) {
 	uint8_t reg;
 
 	reg  = nRF24_ReadReg(nRF24_REG_EN_RXADDR);
-	reg &= ~(1 << pipe);
+	reg &= ~(1u << pipe);
 	reg &= nRF24_MASK_EN_RX;
 	nRF24_WriteReg(nRF24_REG_EN_RXADDR, reg);
 }
@@ -335,7 +335,7 @@ void nRF24_EnableAA(uint8_t pipe) {
 
 	// Set bit in EN_AA register
 	reg  = nRF24_ReadReg(nRF24_REG_EN_AA);
-	reg |= (1 << pipe);
+	reg |= (1u << pipe);
 	nRF24_WriteReg(nRF24_REG_EN_AA, reg);
 }
 
@@ -351,7 +351,7 @@ void nRF24_DisableAA(uint8_t pipe) {
 	} else {
 		// Clear bit in the EN_AA register
 		reg  = nRF24_ReadReg(nRF24_REG_EN_AA);
-		reg &= ~(1 << pipe);
+		reg &= ~(1u << pipe);
 		nRF24_WriteReg(nRF24_REG_EN_AA, reg);
 	}
 }
@@ -378,13 +378,13 @@ uint8_t nRF24_GetStatus_RXFIFO(void) {
 // return: one of the nRF24_STATUS_TXFIFO_xx values
 // note: the TX_REUSE bit ignored
 uint8_t nRF24_GetStatus_TXFIFO(void) {
-	return ((nRF24_ReadReg(nRF24_REG_FIFO_STATUS) & nRF24_MASK_TXFIFO) >> 4);
+	return ((nRF24_ReadReg(nRF24_REG_FIFO_STATUS) & nRF24_MASK_TXFIFO) >> 4u);
 }
 
 // Get pipe number for the payload available for reading from RX FIFO
 // return: pipe number or 0x07 if the RX FIFO is empty
 uint8_t nRF24_GetRXSource(void) {
-	return ((nRF24_ReadReg(nRF24_REG_STATUS) & nRF24_MASK_RX_P_NO) >> 1);
+	return ((nRF24_ReadReg(nRF24_REG_STATUS) & nRF24_MASK_RX_P_NO) >> 1u);
 }
 
 // Get auto retransmit statistic
@@ -448,7 +448,7 @@ static nRF24_RXResult nRF24_ReadPayloadGeneric(uint8_t *pBuf, uint8_t *length, u
 	uint8_t pipe;
 
 	// Extract a payload pipe number from the STATUS register
-	pipe = (nRF24_ReadReg(nRF24_REG_STATUS) & nRF24_MASK_RX_P_NO) >> 1;
+	pipe = (nRF24_ReadReg(nRF24_REG_STATUS) & nRF24_MASK_RX_P_NO) >> 1u;
 
 	// RX FIFO empty?
 	if (pipe < 6) {

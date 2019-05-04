@@ -9,7 +9,7 @@
 
 
 #ifdef USE_HAL_DRIVER
-extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi1;
 
 
 static inline void nRF24_CE_L() {
@@ -32,7 +32,7 @@ static inline void nRF24_CSN_H() {
 static inline uint8_t nRF24_LL_RW(uint8_t data) {
     // Wait until TX buffer is empty
     uint8_t result;
-    if(HAL_SPI_TransmitReceive(&hspi3,&data,&result,1,2000)!=HAL_OK) {
+    if(HAL_SPI_TransmitReceive(&hspi1,&data,&result,1,2000)!=HAL_OK) {
         Error_Handler();
     };
     return result;
