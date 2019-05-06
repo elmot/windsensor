@@ -60,7 +60,7 @@ void mainLoop() {
         updateLcd(ts);
 
         msDelay(10);
-
+        LL_IWDG_ReloadCounter(IWDG);
     }
 #pragma clang diagnostic pop
 

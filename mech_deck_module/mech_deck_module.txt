@@ -1,6 +1,6 @@
 Configuration	mech_deck_module
-STM32CubeMX 	5.1.0
-Date	04/26/2019
+STM32CubeMX 	5.2.0
+Date	05/06/2019
 MCU	STM32L476RGTx
 
 
@@ -130,7 +130,7 @@ Project Settings :
 Project Name : mech_deck_module
 Project Folder : D:\projects\windsensor\mech_deck_module
 Toolchain / IDE : SW4STM32
-Firmware Package Name and Version : STM32Cube FW_L4 V1.13.0
+Firmware Package Name and Version : STM32Cube FW_L4 V1.14.0
 
 
 Code Generation Settings : 

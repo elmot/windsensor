@@ -7,7 +7,7 @@
 
 uint8_t nRF24_payload[33];
 
-bool radioDebug = false;
+bool radioDebug = true;
 
 void Toggle_LED() {
     LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);

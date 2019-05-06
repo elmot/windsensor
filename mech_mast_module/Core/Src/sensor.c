@@ -8,11 +8,7 @@
 // Buffer to store a payload of maximum width
 
 extern I2C_HandleTypeDef hi2c1;
-char lamp = 0;
-
-void Toggle_LED() {
-    HAL_GPIO_TogglePin(NAVI_GPIO_Port, NAVI_Pin);
-}
+static char lamp = 0;
 
 uint8_t nRF24_payload[32];
 
@@ -100,6 +96,7 @@ void radioLoop() {
         pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
         if (payload_length > 0) {
             nRF24_WriteAckPayload(pipe, reply, (uint8_t) strlen(reply));
+            toggleDiagLed();
         }
 
         // Clear all pending IRQ flags
@@ -109,8 +106,23 @@ void radioLoop() {
 
         nRF24_payload[payload_length] = 0;
         printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
-        lamp = (char) (nRF24_payload[1] & 1u);
-        HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,lamp);
+        lamp = (char) (nRF24_payload[1]);
+        switch(lamp) {
+            case '2':
+                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_SET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_RESET);
+                break;
+            case '3':
+                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_SET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_RESET);
+                break;
+            default:
+                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_SET);
+        }
     }
 }
 

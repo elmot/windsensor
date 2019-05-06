@@ -60,6 +60,7 @@ void radioLoop(void);
 void sensorLoop(void);
 void resetI2C(void);
 extern char *reply;
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -71,15 +72,22 @@ extern char *reply;
 #define NRF_CE_GPIO_Port GPIOB
 #define NRF_IRQ_Pin GPIO_PIN_1
 #define NRF_IRQ_GPIO_Port GPIOB
-#define NAVI_Pin GPIO_PIN_12
-#define NAVI_GPIO_Port GPIOB
+#define DIAG_Pin GPIO_PIN_12
+#define DIAG_GPIO_Port GPIOB
 #define ANCHOR_Pin GPIO_PIN_13
 #define ANCHOR_GPIO_Port GPIOB
 #define LIGHT_ENA_Pin GPIO_PIN_14
 #define LIGHT_ENA_GPIO_Port GPIOB
+#define NAVI_Pin GPIO_PIN_15
+#define NAVI_GPIO_Port GPIOB
 #define WIND_TICK_Pin GPIO_PIN_8
 #define WIND_TICK_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
+
+inline static void toggleDiagLed() {
+    HAL_GPIO_TogglePin(DIAG_GPIO_Port, DIAG_Pin);
+}
+
 
 /* USER CODE END Private defines */
 

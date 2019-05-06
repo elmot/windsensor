@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32l4xx_ll_iwdg.h"
 #include "stm32l4xx_ll_crs.h"
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_bus.h"
