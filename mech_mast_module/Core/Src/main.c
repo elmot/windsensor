@@ -70,6 +70,10 @@ static void MX_IWDG_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void resetI2C() {
+    HAL_I2C_DeInit(&hi2c1);
+    MX_I2C1_Init();
+}
 
 /* USER CODE END 0 */
 
@@ -120,6 +124,7 @@ int main(void)
   while (1)
   {
       radioLoop();
+      sensorLoop();
       HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
@@ -246,7 +251,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.ClockSpeed = 10000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
