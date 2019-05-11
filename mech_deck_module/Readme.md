@@ -76,5 +76,39 @@ Misc
 |  BLUE BTN |  PC13	    | CN7-23     |  
 |  GRN LED  |  PA5 	    | CN10-11    |  
 
+Radio transimssion format
+====
+
+Deck -> Mast
+----
+Symbolic button state. 
+
+*B1* -> Everything is off 
+
+*B2* -> Navigational lights on  
+
+*B3* -> Anchor lights on  
+
+Mast -> Deck
+----
+
+*b;agc;angle;wind_ticks_length;mvolts*
+
+*b* - char '1', '2' or '3'. Button state, same as coming from deck module
+
+*agc* - automatic sensor gain control, hexadecimal value
+0 means the magnet is too close to sensor; 0x80 means the magnet is too far, value is invalid in both cases 
+
+*angle* - wind angle, decimal, degrees
+
+*wind_ticks_length* - rotation tick length, hexadecimal
+Unit is 100 microseconds, 8 ticks per wind speed rotor revolution 
+
+*mvolts* - ADC mV, decimal, values in range 0..3300
+
+Example:
+
+*2;4e;254;5ef;2200*
+
 [Full STM32CubeXM report](mech_deck_module.pdf)
 
