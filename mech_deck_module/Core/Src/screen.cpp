@@ -82,6 +82,10 @@ void splashLcd(void) {
     msDelay(70);
 }
 
+void charOutput(int charCode, int xBytes, int yPos) {
+    Screen::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
+}
+
 void updateLcd(uint_fast64_t timeStamp) {
     static uint_fast64_t lastUpdate = 0;
     if (timeStamp - lastUpdate < 50) return;
@@ -103,6 +107,13 @@ void updateLcd(uint_fast64_t timeStamp) {
             break;
 
     }
+    charOutput(state.windAngle / 100, 18, 96);
+    charOutput((state.windAngle / 10) % 10, 22, 96);
+    charOutput(state.windAngle % 10, 26, 96);
+
+    charOutput(((int) state.windSpd / 10) % 10, 20, 60);
+    charOutput((int) state.windSpd % 10, 24, 60);
+
     Screen::displayScreen();
 }
 

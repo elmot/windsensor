@@ -150,15 +150,34 @@ void radioLoop(void) {
         angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
         state.windAngle = angle;
     }
-    state.windSpd = calcSpeed(agcReport);
+    state.windSpd = calcSpeed(speedReport);
 }
 
 double calcSpeed(int speedReport) {
-    double lowBound[] = {0,0};
-    double highBound[] = {0,0};
+    static const double DOUBLE_ZERO[] = {0, 0};
+    const double *lowBound = DOUBLE_ZERO;
+    double *highBound;
     int idx = 0;
-    for()
-    return 0;
+    if (speedReport <= 0) {
+        return 0;
+    }
+    int tps = 10000 / speedReport;
+    for (; idx < WIND_TABLE_LEN; idx++) {
+        double v = naviSettings.windTpsToMs[idx][0];
+        if (v == 0) {
+            idx--;
+            break;
+        }
+        if (v > tps) break;
+    }
+    if (idx < 0) return 0;
+    highBound = naviSettings.windTpsToMs[idx];
+    if (idx > 0) {
+        lowBound = naviSettings.windTpsToMs[idx - 1];
+    }
+
+    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (tps - lowBound[0]) / (highBound[0] - lowBound[0]);
+    return speed < naviSettings.minWindMs ? 0 : speed;
 }
 
 void outputNmea() {

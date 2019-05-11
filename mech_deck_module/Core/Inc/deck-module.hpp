@@ -30,9 +30,10 @@ enum LightsState {
 #define KEY_REPEAT_E     0b100000u
 #define KEY_RELEASE_E    0b000001u
 
+#define WIND_TABLE_LEN 5
 struct NaviSettings {
     int windAngleCorrection ;
-    double windTpsToMs [5][2];
+    double windTpsToMs [WIND_TABLE_LEN][2];
     double minWindMs ;
     int tooCloseAngle;
     int tooFreeAngle;
@@ -71,6 +72,7 @@ struct NaviState {
 
 extern struct NaviState state;
 extern struct NaviSettings naviSettings;
+
 
 enum DeviceState radioCheck();
 

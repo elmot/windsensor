@@ -78,7 +78,7 @@ struct NaviSettings naviSettings = {
         .minWindMs = 1,
         .tooCloseAngle = 33,
         .tooFreeAngle = 170,
-        .windTpsToMs= {{0, 0}, {10, 2}, {100, 6}, {300, 20}}
+        .windTpsToMs= {{1, 1}, {10, 2}, {100, 6}, {300, 20}}
 };
 
 static inline bool checkTime(uint64_t started) {
