@@ -140,8 +140,9 @@ void radioLoop(void) {
     nRF24_payload[payload_length] = 0;
 
     if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
-    int buttonReport, agcReport, angleReport, speedReport;
-    sscanf((const char *) nRF24_payload, "%x;%x;%x;%x", &buttonReport, &agcReport, &angleReport, &speedReport);
+    char buttonReport;
+    int agcReport, speedReport, voltage, angle;
+    sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d", &buttonReport, &agcReport, &angle, &speedReport, &voltage);
 
     static char nmea[100];
 
@@ -150,17 +151,15 @@ void radioLoop(void) {
     if (radioDebug) printf(nmea);
 
     const char *lr;
-    int angle;
     if (agcReport == 0x80 || agcReport == 0) {
         lr = "";
         angle = -1;
-    } else if ( angleReport >= 0x800 )
+    } else if ( angle > 180 )
     {
         lr="L";
-        angle = 180 *(0xFFF - angleReport) / 0x800;
+        angle = 360 - angle;
     } else {
         lr="R";
-        angle = 180 * angleReport / 0x800;
     }
     snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,12.2,N,6.27,M,22.6,K", angle, lr);
     appendChecksumEol(nmea, sizeof(nmea));

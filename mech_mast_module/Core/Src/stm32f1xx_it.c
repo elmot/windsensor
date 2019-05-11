@@ -52,11 +52,14 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -103,6 +106,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+      HardFault_Handler();
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -118,6 +122,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+    HardFault_Handler();
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -133,6 +138,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+      HardFault_Handler();
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -198,20 +204,54 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles EXTI line1 interrupt.
+  */
+void EXTI1_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI1_IRQn 0 */
+
+  /* USER CODE END EXTI1_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+  /* USER CODE BEGIN EXTI1_IRQn 1 */
+
+  /* USER CODE END EXTI1_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 capture compare interrupt.
   */
 void TIM1_CC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_CC_IRQn 0 */
-
+    __disable_irq();
+    __HAL_TIM_CLEAR_IT(&htim1, TIM_IT_CC1);
+    if(wind_ticks == 0) {
+        wind_ticks = __HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1);
+    } else {
+        wind_ticks = (wind_ticks * 3 /4) + __HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1) / 4;
+    }
+    wind_ticks_skipped = 0;
+    __enable_irq();
   /* USER CODE END TIM1_CC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_CC_IRQn 1 */
 
   /* USER CODE END TIM1_CC_IRQn 1 */
 }
 
-/* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void) {
+    /* USER CODE BEGIN TIM2_IRQn 0 */
+    sensorLoop();
+    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    /* USER CODE END TIM2_IRQn 0 */
+    /* USER CODE BEGIN TIM2_IRQn 1 */
 
+    /* USER CODE END TIM2_IRQn 1 */
+}
+
+/* USER CODE BEGIN 1 */
+#pragma clang diagnostic pop
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

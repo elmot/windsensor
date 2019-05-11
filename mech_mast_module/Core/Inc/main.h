@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -57,21 +57,25 @@ void Error_Handler(void);
 void radioCheck(void);
 void radioInit(void);
 void radioLoop(void);
-void sensorLoop(void);
 void resetI2C(void);
-extern char *reply;
+void sensorLoop(void);
+
+extern volatile char *reply;
+extern volatile int wind_ticks;
+extern volatile int wind_ticks_skipped;
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BATT_Pin GPIO_PIN_0
-#define BATT_GPIO_Port GPIOA
+#define VOLTS_Pin GPIO_PIN_0
+#define VOLTS_GPIO_Port GPIOA
 #define NRF_CSN_Pin GPIO_PIN_4
 #define NRF_CSN_GPIO_Port GPIOA
 #define NRF_CE_Pin GPIO_PIN_0
 #define NRF_CE_GPIO_Port GPIOB
 #define NRF_IRQ_Pin GPIO_PIN_1
 #define NRF_IRQ_GPIO_Port GPIOB
+#define NRF_IRQ_EXTI_IRQn EXTI1_IRQn
 #define DIAG_Pin GPIO_PIN_12
 #define DIAG_GPIO_Port GPIOB
 #define ANCHOR_Pin GPIO_PIN_13

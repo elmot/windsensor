@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "support.h"
 #include "nrf24.h"
 //
@@ -8,7 +9,8 @@
 // Buffer to store a payload of maximum width
 
 extern I2C_HandleTypeDef hi2c1;
-static char lamp = 0;
+extern ADC_HandleTypeDef hadc1;
+static char lamp = '0';
 
 uint8_t nRF24_payload[32];
 
@@ -95,8 +97,8 @@ void radioLoop() {
         // Get a payload from the transceiver
         pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
         if (payload_length > 0) {
-            nRF24_WriteAckPayload(pipe, reply, (uint8_t) strlen(reply));
-            toggleDiagLed();
+            char *tmp = (char *) reply;
+            nRF24_WriteAckPayload(pipe, tmp, (uint8_t) strlen(tmp));
         }
 
         // Clear all pending IRQ flags
@@ -107,21 +109,21 @@ void radioLoop() {
         nRF24_payload[payload_length] = 0;
         printf("RCV PIPE#%d PAYLOAD:>%s<\r\n", pipe, nRF24_payload);
         lamp = (char) (nRF24_payload[1]);
-        switch(lamp) {
+        switch (lamp) {
             case '2':
-                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_SET);
-                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(NAVI_GPIO_Port, NAVI_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port, ANCHOR_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port, LIGHT_ENA_Pin, GPIO_PIN_RESET);
                 break;
             case '3':
-                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_SET);
-                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(NAVI_GPIO_Port, NAVI_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port, ANCHOR_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port, LIGHT_ENA_Pin, GPIO_PIN_RESET);
                 break;
             default:
-                HAL_GPIO_WritePin(NAVI_GPIO_Port,NAVI_Pin,GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(ANCHOR_GPIO_Port,ANCHOR_Pin,GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port,LIGHT_ENA_Pin,GPIO_PIN_SET);
+                HAL_GPIO_WritePin(NAVI_GPIO_Port, NAVI_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(ANCHOR_GPIO_Port, ANCHOR_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(LIGHT_ENA_GPIO_Port, LIGHT_ENA_Pin, GPIO_PIN_SET);
         }
     }
 }
@@ -168,27 +170,74 @@ void AS5601_print_reg16(const char *formatStr, int addr, uint16_t mask) {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-magic-numbers"
-static char sens_data_internal[15];
-char *reply;
+static char sens_data_internal[2][30];
+static unsigned int replyBufIdx = 0;
+
+#define ANGLE_BUFF_LEN 21
+
+static int angle[ANGLE_BUFF_LEN];
+static int angleCopy[ANGLE_BUFF_LEN];
+static int angleIdx;
+
+static int volts;
+
+#define VREF_MV 1200
+
+volatile char *reply;
+
+static int compareInt(const void *a, const void *b) {
+    return (*(int *) a) - (*(int *) b);
+}
+
+void measureAngleAndMakeReply(HAL_StatusTypeDef *status, uint8_t agc, uint16_t ticks);
+
+void measureVolts();
+
 void sensorLoop() {
     HAL_StatusTypeDef status;
     uint8_t agc = 0;
-    uint16_t angle = 0;
-    uint16_t speed = 123;//todo read from somewhere
-    agc = (uint8_t) as5601ReadReg(0x1A, false, 0xFF, &status);
-    if(status == HAL_OK) {
-        angle = as5601ReadReg(0x0C, true, 0xFFF, &status);
+    __disable_irq();
+    if (++wind_ticks_skipped >= 20) {
+        wind_ticks = 0;
     }
-    if(status == HAL_OK) {
-        snprintf(sens_data_internal, sizeof(sens_data_internal),"%c;%02x;%03x;%04x", lamp ? '0' : '1' ,agc,angle,speed);
-        reply = sens_data_internal;
+    uint16_t ticks = wind_ticks;
+    __enable_irq();
+    measureVolts();
+    measureAngleAndMakeReply(&status, agc, ticks);
+}
+
+void measureVolts() {
+    HAL_ADCEx_InjectedPollForConversion(&hadc1, 30);
+    int vRef = HAL_ADCEx_InjectedGetValue(&hadc1, 2);
+    int measured = HAL_ADCEx_InjectedGetValue(&hadc1, 1);
+    volts = VREF_MV * measured / vRef / 4095;
+    HAL_ADCEx_InjectedStart(&hadc1);
+}
+
+void measureAngleAndMakeReply(HAL_StatusTypeDef *status, uint8_t agc, uint16_t ticks) {
+    agc = (uint8_t) as5601ReadReg(0x1A, false, 0xFF, status);
+    if ((*status) == HAL_OK) {
+        angle[angleIdx] = as5601ReadReg(0x0C, true, 0xFFF, status);
+        angleIdx = (angleIdx + 1) % ANGLE_BUFF_LEN;
+        memcpy(angleCopy, angle, ANGLE_BUFF_LEN * sizeof(angleCopy[0]));
+        qsort(angleCopy, ANGLE_BUFF_LEN, sizeof(angleCopy[0]), compareInt);
+    }
+    if ((*status) == HAL_OK) {
+        snprintf(sens_data_internal[replyBufIdx], sizeof(sens_data_internal[0]), "%c;%02x;%03d;%04x;%d", lamp, agc,
+                 angleCopy[ANGLE_BUFF_LEN / 2] * 360 / 4095,
+                 ticks, volts);
+        reply = sens_data_internal[replyBufIdx];
+        replyBufIdx ^= 1u;
     } else {
         reply = "ERROR";
         resetI2C();
     }
 }
+
 #pragma clang diagnostic pop
 
+volatile int wind_ticks = 0;
+volatile int wind_ticks_skipped = 100;
 /*
 void sensorLoop() {
     AS5601_print_reg8("Status: %02x; ", 0xb,0x38);
