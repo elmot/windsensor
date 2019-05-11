@@ -162,6 +162,7 @@ void initLcd(void);
 void splashLcd(void);
 
 void updateLcd(uint_fast64_t timestamp);
+void outputNmea(void);
 
 extern volatile uint_fast64_t _sysTicks;
 static inline void _sysTimerRoutine() {

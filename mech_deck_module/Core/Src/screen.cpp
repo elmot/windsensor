@@ -86,14 +86,15 @@ void updateLcd(uint_fast64_t timeStamp) {
     static uint_fast64_t lastUpdate = 0;
     if (timeStamp - lastUpdate < 50) return;
     lastUpdate = timeStamp;
-    static float theta = 0.0;
+
     Screen::clearPict();
     Screen::copyPict(0, 0, 16, 128, LEFT_BACKGROUND);
     affineScreen.reset();
-    affineScreen.rotate(theta += 0.1, 63, 63);
+    affineScreen.rotate(-state.windAngle / 180.0 * M_PI, 63, 63);
     dashedArrow();
     switch (state.anemState) {
-        case OK:break;
+        case OK:
+            break;
         case CONN_FAIL:
             Screen::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
             break;
@@ -108,14 +109,22 @@ void updateLcd(uint_fast64_t timeStamp) {
 void dashedArrow() {
 //    affineScreen.line(63, 127, 63, 63, 2, "10001100");
     for (int i = 63; i < 128; i += 4) {
+        affineScreen.pixel(62, i, 1);
         affineScreen.pixel(63, i, 1);
         affineScreen.pixel(64, i, 1);
+        affineScreen.pixel(65, i, 1);
+        affineScreen.pixel(62, i + 1, 1);
         affineScreen.pixel(63, i + 1, 1);
         affineScreen.pixel(64, i + 1, 1);
+        affineScreen.pixel(65, i + 1, 1);
+        affineScreen.pixel(62, i + 2, 0);
         affineScreen.pixel(63, i + 2, 0);
         affineScreen.pixel(64, i + 2, 0);
+        affineScreen.pixel(65, i + 2, 0);
+        affineScreen.pixel(62, i + 3, 0);
         affineScreen.pixel(63, i + 3, 0);
         affineScreen.pixel(64, i + 3, 0);
+        affineScreen.pixel(65, i + 3, 0);
     }
 }
 
@@ -151,8 +160,7 @@ void Screen::displayScreen() {
 #pragma clang diagnostic ignored "-Wunknown-attributes"
 
 void static inline __attribute__((optimize("O0"))) shortDelay() {
-    for(int i = 0; i <10;i++)
-    {
+    for (int i = 0; i < 10; i++) {
         __NOP();
     }
 }

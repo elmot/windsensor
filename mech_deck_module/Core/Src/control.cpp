@@ -41,7 +41,7 @@ nRF24_TXResult nRF24_TransmitPacket(const void *pBuf, uint8_t length) {
     nRF24_CE_L();
 
     // Transfer a data from the specified buffer to the TX FIFO
-    nRF24_WritePayload((uint8_t *)pBuf, length);
+    nRF24_WritePayload((uint8_t *) pBuf, length);
 
     // Start a transmission by asserting CE pin (must be held at least 10us)
     nRF24_CE_H();
@@ -52,7 +52,7 @@ nRF24_TXResult nRF24_TransmitPacket(const void *pBuf, uint8_t length) {
     // note: this solution is far from perfect, better to use IRQ instead of polling the status
     do {
         status = nRF24_GetStatus();
-        if (status & (uint8_t)(nRF24_FLAG_TX_DS | nRF24_FLAG_MAX_RT)) {
+        if (status & (uint8_t) (nRF24_FLAG_TX_DS | nRF24_FLAG_MAX_RT)) {
             break;
         }
     } while (wait--);
@@ -84,9 +84,9 @@ nRF24_TXResult nRF24_TransmitPacket(const void *pBuf, uint8_t length) {
     return nRF24_TX_ERROR;
 }
 
-void checkButtons();
-
 void appendChecksumEol(char *nmea, int maxLen);
+
+static double calcSpeed(int speedReport);
 
 void radioLoop(void) {
 
@@ -96,7 +96,7 @@ void radioLoop(void) {
     static uint8_t otx;
     static uint8_t otx_plos_cnt; // lost packet count
     static uint8_t otx_arc_cnt; // retransmit count
-    const void * button;
+    const void *button;
 
 
     switch (state.lights) {
@@ -144,33 +144,46 @@ void radioLoop(void) {
     int agcReport, speedReport, voltage, angle;
     sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d", &buttonReport, &agcReport, &angle, &speedReport, &voltage);
 
-    static char nmea[100];
-
-    snprintf(nmea, sizeof(nmea), "$GPRMC,123519,A,6022.0962,N,02829.173,E,012.4,064.4,230119,003.1,W");
-    appendChecksumEol(nmea, sizeof(nmea));
-    if (radioDebug) printf(nmea);
-
-    const char *lr;
     if (agcReport == 0x80 || agcReport == 0) {
-        lr = "";
-        angle = -1;
-    } else if ( angle > 180 )
-    {
-        lr="L";
-        angle = 360 - angle;
+        state.windAngle = angle = -1;
     } else {
-        lr="R";
+        angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
+        state.windAngle = angle;
     }
-    snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,12.2,N,6.27,M,22.6,K", angle, lr);
+    state.windSpd = calcSpeed(agcReport);
+}
+
+double calcSpeed(int speedReport) {
+    double lowBound[] = {0,0};
+    double highBound[] = {0,0};
+    int idx = 0;
+    for()
+    return 0;
+}
+
+void outputNmea() {
+    const char *lr;
+    static char nmea[100];
+    //todo delay
+
+    if (state.windAngle < 0) {
+        strcpy(nmea, "$WIVWR,,,,N,,M,,K");
+    } else {
+        int nmeaAngle;
+        if (state.windAngle > 180) {
+            lr = "L";
+            nmeaAngle = 360 - state.windAngle;
+        } else {
+            lr = "R";
+            nmeaAngle = state.windAngle;
+        }
+        snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,%f,N,%f,M,%f,K", nmeaAngle, lr,
+                 state.windSpd * 3.6 / 1.852 /*knots*/,
+                 state.windSpd /*meters per second*/,
+                 state.windSpd * 3.6 /*km per hour*/);
+    }
     appendChecksumEol(nmea, sizeof(nmea));
     if (radioDebug) printf(nmea);
-
-    // Wait ~0.5s
-    if (payload_length > 0) {
-        Toggle_LED();
-    }
-    checkButtons();
-
 }
 
 void appendChecksumEol(char *nmea, int maxLen) {
@@ -182,19 +195,6 @@ void appendChecksumEol(char *nmea, int maxLen) {
     }
     snprintf(&nmea[pos], (size_t) (maxLen - pos), "*%02x\r\n", sum);
 
-}
-
-void checkButtons() {
-
-/* todo restore
-    if (HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin) == GPIO_PIN_RESET) {
-        button = "B1";
-    } else if (HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET) {
-        button = "B2";
-    } else if (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET) {
-        button = "B3";
-    }
-*/
 }
 
 void radioInit() {// Initialize the nRF24L01 to its default state

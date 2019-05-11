@@ -58,6 +58,7 @@ void mainLoop() {
         updateKeyboard(ts);
         adjustBackLight();
         updateLcd(ts);
+        outputNmea();
 
         msDelay(10);
         LL_IWDG_ReloadCounter(IWDG);
