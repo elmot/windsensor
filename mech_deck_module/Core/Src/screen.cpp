@@ -18,6 +18,11 @@
 #define LCM_SET_GRAPH_HOME 0x42
 #define LCM_SET_GRAPH_COLS 0x43
 
+#define CHAR_BACK_LIGHT 10
+#define CHAR_CONN_FAIL 12
+#define CHAR_ANCHOR 13
+#define CHAR_NAVI 14
+
 MaskedScreen maskedScreen = MaskedScreen();
 AffineTransform affineScreen = AffineTransform(maskedScreen);
 
@@ -86,6 +91,29 @@ void charOutput(int charCode, int xBytes, int yPos) {
     Screen::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
 }
 
+void drawScreenData() {
+    if (state.windAngle >= 0) {
+        charOutput(state.windAngle / 100, 18, 96);
+        charOutput((state.windAngle / 10) % 10, 22, 96);
+        charOutput(state.windAngle % 10, 26, 96);
+    }
+
+    charOutput(((int) state.windSpd / 10) % 10, 20, 60);
+    charOutput((int) state.windSpd % 10, 24, 60);
+    if (state.backLightPwm > 0) {
+        charOutput(CHAR_BACK_LIGHT, 26, 0);
+    }
+    switch (state.lights) {
+        case ANCHOR:
+            charOutput(CHAR_ANCHOR, 6, 38);
+            break;
+        case NAVI:
+            charOutput(CHAR_NAVI, 6, 38);
+            break;
+        default:;
+    }
+}
+
 void updateLcd(uint_fast64_t timeStamp) {
     static uint_fast64_t lastUpdate = 0;
     if (timeStamp - lastUpdate < 50) return;
@@ -98,21 +126,16 @@ void updateLcd(uint_fast64_t timeStamp) {
     dashedArrow();
     switch (state.anemState) {
         case OK:
+            drawScreenData();
             break;
         case CONN_FAIL:
             Screen::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
             break;
         default:
-            Screen::copyPict(6, 38, 4, 32, &FONT[2 * 32 * 4]);
+            charOutput(CHAR_CONN_FAIL, 6, 38);
             break;
 
     }
-    charOutput(state.windAngle / 100, 18, 96);
-    charOutput((state.windAngle / 10) % 10, 22, 96);
-    charOutput(state.windAngle % 10, 26, 96);
-
-    charOutput(((int) state.windSpd / 10) % 10, 20, 60);
-    charOutput((int) state.windSpd % 10, 24, 60);
 
     Screen::displayScreen();
 }

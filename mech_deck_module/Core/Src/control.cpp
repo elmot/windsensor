@@ -161,14 +161,14 @@ double calcSpeed(int speedReport) {
     if (speedReport <= 0) {
         return 0;
     }
-    int tps = 10000 / speedReport;
+    int tpm = 60 * 10000 / speedReport;
     for (; idx < WIND_TABLE_LEN; idx++) {
         double v = naviSettings.windTpsToMs[idx][0];
         if (v == 0) {
             idx--;
             break;
         }
-        if (v > tps) break;
+        if (v > tpm) break;
     }
     if (idx < 0) return 0;
     highBound = naviSettings.windTpsToMs[idx];
@@ -176,7 +176,7 @@ double calcSpeed(int speedReport) {
         lowBound = naviSettings.windTpsToMs[idx - 1];
     }
 
-    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (tps - lowBound[0]) / (highBound[0] - lowBound[0]);
+    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (tpm - lowBound[0]) / (highBound[0] - lowBound[0]);
     return speed < naviSettings.minWindMs ? 0 : speed;
 }
 
