@@ -10,6 +10,7 @@
 
 extern I2C_HandleTypeDef hi2c1;
 extern ADC_HandleTypeDef hadc1;
+extern IWDG_HandleTypeDef hiwdg;
 static char lamp = '0';
 
 uint8_t nRF24_payload[32];
@@ -87,7 +88,7 @@ void radioCheck() {
     // Configure the nRF24L01+
     printf("nRF24L01+ check: ");
     if (!nRF24_Check()) {
-        Error_Handler();
+        Error_Indication(400, 50);
     }
     printf("OK\r\n");
 }
@@ -226,10 +227,24 @@ void measureAngleAndMakeReply(HAL_StatusTypeDef *status, uint8_t agc, uint16_t t
         snprintf(sens_data_internal[replyBufIdx], sizeof(sens_data_internal[0]), "%c;%02x;%03d;%04x;%d", lamp, agc,
                  angleCopy[ANGLE_BUFF_LEN / 2] * 360 / 4095,
                  ticks, volts);
+        if (agc == 0 || agc == 0x80) {
+            for (int i = 0; i < 40; i++) {
+                HAL_GPIO_TogglePin(DIAG_GPIO_Port, DIAG_Pin);
+                HAL_Delay(30);
+            }
+        }
         reply = sens_data_internal[replyBufIdx];
         replyBufIdx ^= 1u;
     } else {
         reply = "ERROR";
+        for (int i = 0; i < 40; i++) {
+            HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_SET);
+            HAL_IWDG_Refresh(&hiwdg);
+            HAL_Delay(130);
+            HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_RESET);
+            HAL_IWDG_Refresh(&hiwdg);
+            HAL_Delay(30);
+        }
         resetI2C();
     }
 }

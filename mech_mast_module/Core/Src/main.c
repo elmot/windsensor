@@ -72,6 +72,8 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+volatile bool sensorPhase;
+
 void resetI2C() {
     HAL_I2C_DeInit(&hi2c1);
     MX_I2C1_Init();
@@ -115,12 +117,14 @@ int main(void)
   MX_IWDG_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+    __HAL_DBGMCU_FREEZE_IWDG();
     HAL_ADCEx_Calibration_Start(&hadc1);
+
     radioCheck();
     radioInit();
     HAL_TIM_Base_Start(&htim1);
-    HAL_TIM_IC_Start_IT(&htim1,TIM_CHANNEL_1);
-    HAL_TIM_IC_Start(&htim1,TIM_CHANNEL_2);
+    HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+    HAL_TIM_IC_Start(&htim1, TIM_CHANNEL_2);
     HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
     HAL_ADCEx_InjectedStart(&hadc1);
     HAL_TIM_Base_Start_IT(&htim2);
@@ -130,14 +134,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
-  while (1)
-  {
-      radioLoop();
-      HAL_IWDG_Refresh(&hiwdg);
+    while (1) {
+        if(sensorPhase) {
+            sensorLoop();
+            sensorPhase = false;
+        }
+        radioLoop();
+        HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */
 }
@@ -545,7 +552,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void Error_Indication(int ledTimeOn, int ledTimeOff) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while (1) {
+        HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_SET);
+        HAL_Delay(ledTimeOff);
+        HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_RESET);
+        HAL_Delay(ledTimeOn);
+    }
+#pragma clang diagnostic pop
+}
 /* USER CODE END 4 */
 
 /**
@@ -555,8 +572,8 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-
+    /* User can add his own implementation to report the HAL error return state */
+    Error_Indication(200, 50);
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -571,8 +588,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    /* User can add his own implementation to report the file name and line number,
+       tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

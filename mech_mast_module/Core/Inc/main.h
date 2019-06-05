@@ -88,9 +88,9 @@ extern volatile int wind_ticks_skipped;
 #define WIND_TICK_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
-inline static void toggleDiagLed() {
-    HAL_GPIO_TogglePin(DIAG_GPIO_Port, DIAG_Pin);
-}
+void Error_Indication(int ledTimeOn, int ledTimeOff);
+
+extern volatile bool sensorPhase;
 
 
 /* USER CODE END Private defines */

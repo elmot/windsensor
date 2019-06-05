@@ -1,6 +1,6 @@
 Configuration	mech_mast_module
-STM32CubeMX 	5.2.0
-Date	05/11/2019
+STM32CubeMX 	5.2.1
+Date	06/06/2019
 MCU	STM32F103C8Tx
 
 

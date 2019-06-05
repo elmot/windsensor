@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 /* USER CODE END 0 */
@@ -106,7 +107,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-      HardFault_Handler();
+        HardFault_Handler();
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -122,7 +123,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-    HardFault_Handler();
+        HardFault_Handler();
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -138,7 +139,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-      HardFault_Handler();
+        HardFault_Handler();
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -223,12 +224,23 @@ void EXTI1_IRQHandler(void)
 void TIM1_CC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_CC_IRQn 0 */
+    static int diag_counter = 0;
+    switch (diag_counter++) {
+        case 2:
+            HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_RESET);
+            break;
+        case 3:
+            HAL_GPIO_WritePin(DIAG_GPIO_Port, DIAG_Pin, GPIO_PIN_SET);
+            diag_counter = 0;
+            break;
+    }
+
     __disable_irq();
     __HAL_TIM_CLEAR_IT(&htim1, TIM_IT_CC1);
-    if(wind_ticks == 0) {
-        wind_ticks = __HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1);
+    if (wind_ticks == 0) {
+        wind_ticks = __HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1);
     } else {
-        wind_ticks = (wind_ticks * 3 /4) + __HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1) / 4;
+        wind_ticks = (wind_ticks * 3 / 4) + __HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) / 4;
     }
     wind_ticks_skipped = 0;
     __enable_irq();
@@ -241,14 +253,16 @@ void TIM1_CC_IRQHandler(void)
 /**
   * @brief This function handles TIM2 global interrupt.
   */
-void TIM2_IRQHandler(void) {
-    /* USER CODE BEGIN TIM2_IRQn 0 */
-    sensorLoop();
+void TIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM2_IRQn 0 */
     __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-    /* USER CODE END TIM2_IRQn 0 */
-    /* USER CODE BEGIN TIM2_IRQn 1 */
+    sensorPhase = true;
 
-    /* USER CODE END TIM2_IRQn 1 */
+  /* USER CODE END TIM2_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
