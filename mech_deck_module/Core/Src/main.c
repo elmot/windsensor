@@ -54,6 +54,8 @@
 
 /* USER CODE END PV */
 
+typedef struct NaviState naviState;
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
@@ -72,13 +74,19 @@ int __unused _write(int __unused file, char *data, int len) {
     return len;
 }
 
-struct NaviState state;
+naviState state = {
+        .anemState = CONN_TIMEOUT,
+        .gpsState = CONN_TIMEOUT,
+        .windAngle = -1};
 struct NaviSettings naviSettings = {
         .windAngleCorrection =-15,
         .minWindMs = 1,
         .tooCloseAngle = 33,
         .tooFreeAngle = 170,
-        .windTpsToMs= {{1, 1}, {30, 2}, {100, 6}, {300, 20}}
+        .windTpsToMs= {{1,   1},
+                       {30,  2},
+                       {100, 6},
+                       {300, 20}}
 };
 
 static inline bool checkTime(uint64_t started) {
@@ -113,6 +121,7 @@ uint8_t nRF24_LL_RW(uint8_t data) {
   */
 int main(void) {
     /* USER CODE BEGIN 1 */
+    LL_DBGMCU_APB1_GRP1_FreezePeriph(LL_DBGMCU_APB1_GRP1_IWDG_STOP);
 
     /* USER CODE END 1 */
 
@@ -154,6 +163,7 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+
     mainLoop();
     /* USER CODE END WHILE */
 

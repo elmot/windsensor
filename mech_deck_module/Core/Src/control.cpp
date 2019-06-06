@@ -119,15 +119,27 @@ void radioLoop(void) {
     otx_arc_cnt = (otx & nRF24_MASK_ARC_CNT); // auto retransmissions counter
     switch (tx_res) {
         case nRF24_TX_SUCCESS:
-            state.anemState = OK;
-            if (radioDebug) printf("OK");
+            char buttonReport;
+            int agcReport, speedReport, voltage, angle;
+            sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d",
+                   &buttonReport, &agcReport, &angle, &speedReport, &voltage);
+            if (agcReport == 0x80 || agcReport == 0) {
+                state.windAngle = angle = -1;
+                state.anemState = DATA_ERROR;
+                if (radioDebug) printf("ANGLE_SENSOR_ERROR");
+            } else {
+                angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
+                state.anemState = OK;
+                state.windAngle = angle;
+            }
+            state.windSpd = calcSpeed(speedReport);
             break;
         case nRF24_TX_TIMEOUT:
             state.anemState = CONN_FAIL;
             if (radioDebug) printf("TIMEOUT");
             break;
         case nRF24_TX_MAXRT:
-            state.anemState = DATA_NO_FIX;
+            state.anemState = CONN_FAIL;
             if (radioDebug) printf("MAX RETRANSMIT");
             packets_lost += otx_plos_cnt;
             nRF24_ResetPLOS();
@@ -140,17 +152,6 @@ void radioLoop(void) {
     nRF24_payload[payload_length] = 0;
 
     if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
-    char buttonReport;
-    int agcReport, speedReport, voltage, angle;
-    sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d", &buttonReport, &agcReport, &angle, &speedReport, &voltage);
-
-    if (agcReport == 0x80 || agcReport == 0) {
-        state.windAngle = angle = -1;
-    } else {
-        angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
-        state.windAngle = angle;
-    }
-    state.windSpd = calcSpeed(speedReport);
 }
 
 double calcSpeed(int speedReport) {

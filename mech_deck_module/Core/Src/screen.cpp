@@ -128,6 +128,7 @@ void updateLcd(uint_fast64_t timeStamp) {
         case OK:
             drawScreenData();
             break;
+        case CONN_TIMEOUT:
         case CONN_FAIL:
             Screen::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
             break;
