@@ -81,18 +81,18 @@ Radio transimssion format
 
 Deck -> Mast
 ----
-Symbolic button state. 
+Symbolic button state + ';' + 8 hex digits of unique device id 
 
-*B1* -> Everything is off 
+*B1;abcde123* -> Everything is off 
 
-*B2* -> Navigational lights on  
+*B2;abcde123* -> Navigational lights on  
 
-*B3* -> Anchor lights on  
+*B3;abcde123* -> Anchor lights on  
 
 Mast -> Deck
 ----
 
-*b;agc;angle;wind_ticks_length;mvolts*
+*b;agc;angle;wind_ticks_length;mvolts;device_id*
 
 *b* - char '1', '2' or '3'. Button state, same as coming from deck module
 
@@ -105,6 +105,9 @@ Mast -> Deck
 Unit is 100 microseconds, 8 ticks per wind speed rotor revolution 
 
 *mvolts* - ADC mV, decimal, values in range 0..3300
+
+*device_id* - 8 hex digits of unique device id. Usually calculated from 
+manufacturers unique device id (96 bits = 3 longs)  by xoring three words together
 
 Example:
 

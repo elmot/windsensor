@@ -96,23 +96,26 @@ void radioLoop(void) {
     static uint8_t otx;
     static uint8_t otx_plos_cnt; // lost packet count
     static uint8_t otx_arc_cnt; // retransmit count
-    const void *button;
+    char button;
 
 
     switch (state.lights) {
         case ANCHOR:
-            button = "B2";
+            button = '2';
             break;
         case NAVI:
-            button = "B3";
+            button = '3';
             break;
         default:
-            button = "B1";
+            button = '1';
     }
     if (radioDebug) printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
 
     // Transmit a packet
-    tx_res = nRF24_TransmitPacket(button, 6);
+    char buffer[30] = "B?;";
+    buffer[1] = button;
+    strcat(buffer, SENSOR_SIGNATURE);
+    tx_res = nRF24_TransmitPacket(buffer, strlen(buffer));
     otx = nRF24_GetRetransmitCounters();
     nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
     otx_plos_cnt = (otx & nRF24_MASK_PLOS_CNT) >> 4u; // packets lost counter
@@ -121,18 +124,21 @@ void radioLoop(void) {
         case nRF24_TX_SUCCESS:
             char buttonReport;
             int agcReport, speedReport, voltage, angle;
-            sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d",
-                   &buttonReport, &agcReport, &angle, &speedReport, &voltage);
-            if (agcReport == 0x80 || agcReport == 0) {
-                state.windAngle = angle = -1;
-                state.anemState = DATA_ERROR;
-                if (radioDebug) printf("ANGLE_SENSOR_ERROR");
-            } else {
-                angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
-                state.anemState = OK;
-                state.windAngle = angle;
+            char receivedSignature[9];
+            sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d;%8s",
+                   &buttonReport, &agcReport, &angle, &speedReport, &voltage, receivedSignature);
+            if (strcmp(SENSOR_SIGNATURE, receivedSignature) == 0) {
+                if (agcReport == 0x80 || agcReport == 0) {
+                    state.windAngle = angle = -1;
+                    state.anemState = DATA_ERROR;
+                    if (radioDebug) printf("ANGLE_SENSOR_ERROR");
+                } else {
+                    angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
+                    state.anemState = OK;
+                    state.windAngle = angle;
+                }
+                state.windSpd = calcSpeed(speedReport);
             }
-            state.windSpd = calcSpeed(speedReport);
             break;
         case nRF24_TX_TIMEOUT:
             state.anemState = CONN_FAIL;

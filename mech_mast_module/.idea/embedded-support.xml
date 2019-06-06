@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EmbeddedDevelopment">
+    <option name="windowStateByRunConfigName">
+      <map>
+        <entry key="mech_mast_module.elf">
+          <value>
+            <State>
+              <option name="columnWidths">
+                <list>
+                  <option value="75" />
+                  <option value="344" />
+                  <option value="1414" />
+                </list>
+              </option>
+              <option name="columnOrder">
+                <list>
+                  <option value="Name" />
+                  <option value="SvdValue" />
+                  <option value="Description" />
+                </list>
+              </option>
+              <option name="nodes">
+                <map>
+                  <entry key="STM32F103.svd" value="-E" />
+                  <entry key="STM32F103.svd|p:DBG" value="-E" />
+                  <entry key="STM32F103.svd|p:DBG|CR" value="HE" />
+                  <entry key="STM32F103.svd|p:DBG|IDCODE" value="HE" />
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

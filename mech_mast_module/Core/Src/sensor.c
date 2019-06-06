@@ -97,6 +97,13 @@ void radioLoop() {
     if (nRF24_GetStatus_RXFIFO() != nRF24_STATUS_RXFIFO_EMPTY) {
         // Get a payload from the transceiver
         pipe = nRF24_ReadPayloadDpl(nRF24_payload, &payload_length);
+        if (
+                (payload_length < 4)
+                || (nRF24_payload[0] != 'B')
+                || (nRF24_payload[2] != ';')
+                || (strcmp((char *)&nRF24_payload[3], signature) != 0)) {
+            return;
+        }
         if (payload_length > 0) {
             char *tmp = (char *) reply;
             nRF24_WriteAckPayload(pipe, tmp, (uint8_t) strlen(tmp));
@@ -224,9 +231,9 @@ void measureAngleAndMakeReply(HAL_StatusTypeDef *status, uint8_t agc, uint16_t t
         qsort(angleCopy, ANGLE_BUFF_LEN, sizeof(angleCopy[0]), compareInt);
     }
     if ((*status) == HAL_OK) {
-        snprintf(sens_data_internal[replyBufIdx], sizeof(sens_data_internal[0]), "%c;%02x;%03d;%04x;%d", lamp, agc,
+        snprintf(sens_data_internal[replyBufIdx], sizeof(sens_data_internal[0]), "%c;%02x;%03d;%04x;%d;%s", lamp, agc,
                  angleCopy[ANGLE_BUFF_LEN / 2] * 360 / 4095,
-                 ticks, volts);
+                 ticks, volts, signature);
         if (agc == 0 || agc == 0x80) {
             for (int i = 0; i < 40; i++) {
                 HAL_GPIO_TogglePin(DIAG_GPIO_Port, DIAG_Pin);
