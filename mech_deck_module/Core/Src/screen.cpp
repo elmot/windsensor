@@ -101,9 +101,22 @@ void bigCharOutput(int charCode, int xBytes, int yPos) {
 
 void drawScreenData() {
     if (state.windAngle >= 0) {
-        bigCharOutput(state.windAngle / 100, 15, 80);
-        bigCharOutput((state.windAngle / 10) % 10, 20, 80);
-        bigCharOutput(state.windAngle % 10, 25, 80);
+        int angle;
+        int direction;
+        if (state.windAngle > 180) {
+            angle = 360 - state.windAngle;
+            direction = 11;
+        } else {
+            angle = state.windAngle;
+            direction = 12;
+        }
+        if(angle <33 || angle > 160) {
+            bigCharOutput(13, 25, 32);
+        }
+        bigCharOutput(direction, 20, 32);
+        bigCharOutput(angle / 100, 15, 80);
+        bigCharOutput((angle / 10) % 10, 20, 80);
+        bigCharOutput(angle % 10, 25, 80);
     }
 
     charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
@@ -149,7 +162,8 @@ void updateLcd(uint_fast64_t timeStamp) {
 }
 
 void dashedArrow() {
-//    affineScreen.line(63, 127, 63, 63, 2, "10001100");
+    affineScreen.line(63, 127, 63, 63, 3,"1");
+/*
     for (int i = 63; i < 128; i += 4) {
         affineScreen.pixel(62, i, 1);
         affineScreen.pixel(63, i, 1);
@@ -168,6 +182,7 @@ void dashedArrow() {
         affineScreen.pixel(64, i + 3, 0);
         affineScreen.pixel(65, i + 3, 0);
     }
+*/
 }
 
 void lcmClear() {
