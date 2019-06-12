@@ -137,7 +137,7 @@ void radioLoop(void) {
                     state.anemState = OK;
                     state.windAngle = angle;
                 }
-                state.windSpd = calcSpeed(speedReport);
+                state.windSpdMps = calcSpeed(speedReport);
             }
             break;
         case nRF24_TX_TIMEOUT:
@@ -189,7 +189,7 @@ double calcSpeed(int speedReport) {
 
 void outputNmea() {
     const char *lr;
-    static char nmea[100];
+    static char nmea[150];
     //todo delay
 
     if (state.windAngle < 0) {
@@ -203,10 +203,10 @@ void outputNmea() {
             lr = "R";
             nmeaAngle = state.windAngle;
         }
+        double windSpeedKph = state.windSpdMps * 3.6;
+        double windSpeedKn = windSpeedKph / 1.852;
         snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,%f,N,%f,M,%f,K", nmeaAngle, lr,
-                 state.windSpd * 3.6 / 1.852 /*knots*/,
-                 state.windSpd /*meters per second*/,
-                 state.windSpd * 3.6 /*km per hour*/);
+                 windSpeedKn, state.windSpdMps, windSpeedKph);
     }
     appendChecksumEol(nmea, sizeof(nmea));
     if (radioDebug) printf(nmea);

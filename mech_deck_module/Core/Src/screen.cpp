@@ -2,8 +2,8 @@
 // Created by Ilia.Motornyi on 14/04/2019.
 //
 
-#include <tgmath.h>
 #include <deck-module.hpp>
+#include <math.h>
 #include "screen.hpp"
 
 
@@ -46,12 +46,16 @@ static const uint8_t SPLASH_PICTURE[] = {
 #include "splash.txt"
 };
 
-static const uint8_t LEFT_BACKGROUND[] = {
+static const uint8_t BACKGROUND[] = {
 #include "background.txt"
 };
 
 static const uint8_t FONT[] = {
 #include "font.txt"
+};
+
+static const uint8_t FONT40x48[] = {
+#include "font40x48.txt"
 };
 
 void initLcd(void) {
@@ -91,17 +95,21 @@ void charOutput(int charCode, int xBytes, int yPos) {
     Screen::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
 }
 
+void bigCharOutput(int charCode, int xBytes, int yPos) {
+    Screen::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
+}
+
 void drawScreenData() {
     if (state.windAngle >= 0) {
-        charOutput(state.windAngle / 100, 18, 96);
-        charOutput((state.windAngle / 10) % 10, 22, 96);
-        charOutput(state.windAngle % 10, 26, 96);
+        bigCharOutput(state.windAngle / 100, 15, 80);
+        bigCharOutput((state.windAngle / 10) % 10, 20, 80);
+        bigCharOutput(state.windAngle % 10, 25, 80);
     }
 
-    charOutput(((int) state.windSpd / 10) % 10, 20, 60);
-    charOutput((int) state.windSpd % 10, 24, 60);
+    charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
+    charOutput((int) state.windSpdMps % 10, 21, 0);
     if (state.backLightPwm > 0) {
-        charOutput(CHAR_BACK_LIGHT, 26, 0);
+        charOutput(CHAR_BACK_LIGHT, 0, 0);
     }
     switch (state.lights) {
         case ANCHOR:
@@ -119,13 +127,12 @@ void updateLcd(uint_fast64_t timeStamp) {
     if (timeStamp - lastUpdate < 50) return;
     lastUpdate = timeStamp;
 
-    Screen::clearPict();
-    Screen::copyPict(0, 0, 16, 128, LEFT_BACKGROUND);
-    affineScreen.reset();
-    affineScreen.rotate(-state.windAngle / 180.0 * M_PI, 63, 63);
-    dashedArrow();
+    Screen::copyPict( BACKGROUND);
     switch (state.anemState) {
         case OK:
+            affineScreen.reset();
+            affineScreen.rotate((int)-state.windAngle / 180.0 * M_PI, 63, 63);
+            dashedArrow();
             drawScreenData();
             break;
         case CONN_TIMEOUT:
@@ -280,14 +287,14 @@ void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict)
 void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMask, const uint8_t *pict) {
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
-            screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] = pict[iy * wBytes + ix] ^ xorMask;
+            screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] |= pict[iy * wBytes + ix] ^ xorMask;
         }
     }
 }
 
 void Screen::pixel(float fX, float fY, int color) {
-    uint16_t x = lroundf(0.5f + fX);
-    uint16_t y = lroundf(0.5f + fY);
+    uint16_t x = lroundf(0.5F + fX);
+    uint16_t y = lroundf(0.5F + fY);
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
     uint8_t mask = 0x80U >> (x & 7U);
     uint8_t *addr = &screen_buffer[(x >> 3U) + (WIDTH_BYTES * y)];
@@ -296,8 +303,8 @@ void Screen::pixel(float fX, float fY, int color) {
 }
 
 void AffineTransform::pixel(float x, float y, int color) {
-    float tX = 0.5f + m00 * x + m01 * y + m02;
-    float tY = 0.5f + m10 * x + m11 * y + m12;
+    float tX = 0.5F + m00 * x + m01 * y + m02;
+    float tY = 0.5F + m10 * x + m11 * y + m12;
     screen.pixel(tX, tY, color);
 }
 
@@ -309,7 +316,8 @@ void AffineTransform::reset() {
 void AffineTransform::rotate(float theta) {
     float aSin = sinf(theta);
     float aCos = cosf(theta);
-    float M0, M1;
+    float M0;
+    float M1;
     M0 = m00;
     M1 = m01;
     m00 = aCos * M0 + aSin * M1;
@@ -380,7 +388,7 @@ void Screen::line(float fX1, float fY1, float fX2, float fY2, float fWidth, cons
         if (*patternChar == 0) {
             patternChar = pattern;
         }
-        int color = *(patternChar++) & 1u;
+        unsigned int color = *(patternChar++) & 1u;
         for (int d = 0; d < width; d++) {
             int dy = d - width / 2;
             if (steep) pixel(y + dy, x, color); else pixel(x, y + dy, color);

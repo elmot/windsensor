@@ -18,9 +18,10 @@ SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L476RGTx_FLASH.ld)
 
 SET(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
 
+# Original linker flags -specs=nosys.specs -specs=nano.specs
 SET(COMMON_FLAGS
     "-mcpu=cortex-m4 ${FPU_FLAGS} -mthumb -mthumb-interwork -ffunction-sections -fdata-sections -Og\
-    -g -fno-common -fmessage-length=0 -specs=nosys.specs -specs=nano.specs")
+    -g -fno-common -fmessage-length=0 -specs=nosys.specs")
 
 SET(CMAKE_CXX_FLAGS_INIT "${COMMON_FLAGS} -std=c++11")
 SET(CMAKE_C_FLAGS_INIT "${COMMON_FLAGS} -std=gnu99")

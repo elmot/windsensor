@@ -54,7 +54,6 @@
 
 /* USER CODE END PV */
 
-typedef struct NaviState naviState;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -74,7 +73,7 @@ int __unused _write(int __unused file, char *data, int len) {
     return len;
 }
 
-naviState state = {
+struct NaviState state = {
         .anemState = CONN_TIMEOUT,
         .gpsState = CONN_TIMEOUT,
         .windAngle = -1};
@@ -119,106 +118,113 @@ uint8_t nRF24_LL_RW(uint8_t data) {
   * @brief  The application entry point.
   * @retval int
   */
-int main(void) {
-    /* USER CODE BEGIN 1 */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
     LL_DBGMCU_APB1_GRP1_FreezePeriph(LL_DBGMCU_APB1_GRP1_IWDG_STOP);
 
-    /* USER CODE END 1 */
+  /* USER CODE END 1 */
+  
 
+  /* MCU Configuration--------------------------------------------------------*/
 
-    /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
+  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
-    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+  /* System interrupt init*/
 
-    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  /* USER CODE BEGIN Init */
 
-    /* System interrupt init*/
+  /* USER CODE END Init */
 
-    /* USER CODE BEGIN Init */
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /* USER CODE END Init */
+  /* USER CODE BEGIN SysInit */
 
-    /* Configure the system clock */
-    SystemClock_Config();
+  /* USER CODE END SysInit */
 
-    /* USER CODE BEGIN SysInit */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART2_UART_Init();
+  MX_SPI2_Init();
+  MX_USART1_UART_Init();
+  MX_UART4_Init();
+  MX_TIM3_Init();
+  MX_IWDG_Init();
+  /* USER CODE BEGIN 2 */
 
-    /* USER CODE END SysInit */
+  /* USER CODE END 2 */
 
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-    MX_USART2_UART_Init();
-    MX_SPI2_Init();
-    MX_USART1_UART_Init();
-    MX_UART4_Init();
-    MX_TIM3_Init();
-    MX_IWDG_Init();
-    /* USER CODE BEGIN 2 */
-
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 
     mainLoop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     // moved to mainLoop()
-    /* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void) {
-    LL_FLASH_SetLatency(LL_FLASH_LATENCY_4);
+void SystemClock_Config(void)
+{
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_4);
 
-    if (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_4) {
-        Error_Handler();
-    }
-    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-    LL_RCC_HSI_Enable();
+  if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_4)
+  {
+  Error_Handler();  
+  }
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+  LL_RCC_HSI_Enable();
 
-    /* Wait till HSI is ready */
-    while (LL_RCC_HSI_IsReady() != 1) {
+   /* Wait till HSI is ready */
+  while(LL_RCC_HSI_IsReady() != 1)
+  {
+    
+  }
+  LL_RCC_HSI_SetCalibTrimming(16);
+  LL_RCC_LSI_Enable();
 
-    }
-    LL_RCC_HSI_SetCalibTrimming(16);
-    LL_RCC_LSI_Enable();
+   /* Wait till LSI is ready */
+  while(LL_RCC_LSI_IsReady() != 1)
+  {
+    
+  }
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_1, 10, LL_RCC_PLLR_DIV_2);
+  LL_RCC_PLL_EnableDomain_SYS();
+  LL_RCC_PLL_Enable();
 
-    /* Wait till LSI is ready */
-    while (LL_RCC_LSI_IsReady() != 1) {
+   /* Wait till PLL is ready */
+  while(LL_RCC_PLL_IsReady() != 1)
+  {
+    
+  }
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
-    }
-    LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_1, 10, LL_RCC_PLLR_DIV_2);
-    LL_RCC_PLL_EnableDomain_SYS();
-    LL_RCC_PLL_Enable();
-
-    /* Wait till PLL is ready */
-    while (LL_RCC_PLL_IsReady() != 1) {
-
-    }
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-
-    /* Wait till System clock is ready */
-    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL) {
-
-    }
-    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
-    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-    LL_Init1msTick(80000000);
-    LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
-    LL_SetSystemCoreClock(80000000);
-    LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK2);
-    LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_PCLK1);
-    LL_RCC_SetUARTClockSource(LL_RCC_UART4_CLKSOURCE_PCLK1);
+   /* Wait till System clock is ready */
+  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+  {
+  
+  }
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+  LL_Init1msTick(80000000);
+  LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
+  LL_SetSystemCoreClock(80000000);
+  LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK2);
+  LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_PCLK1);
+  LL_RCC_SetUARTClockSource(LL_RCC_UART4_CLKSOURCE_PCLK1);
 }
 
 /* USER CODE BEGIN 4 */
@@ -229,8 +235,9 @@ void SystemClock_Config(void) {
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void) {
-    /* USER CODE BEGIN Error_Handler_Debug */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     LL_RCC_HSI_Enable();
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
@@ -245,7 +252,7 @@ void Error_Handler(void) {
         LL_mDelay(50);
     }
 #pragma clang diagnostic pop
-    /* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

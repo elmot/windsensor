@@ -62,7 +62,7 @@ struct NaviState {
     double speedK;
     double course;
 
-    double windSpd;
+    double windSpdMps;
     int windAngle;
 
     uint_fast64_t lastPosTS;
