@@ -115,3 +115,8 @@ Example:
 
 [Full STM32CubeXM report](mech_deck_module.pdf)
 
+WIFI
+===
+
+ESP8266EX, 4Mbit
+SSID="EL_NAVI"
