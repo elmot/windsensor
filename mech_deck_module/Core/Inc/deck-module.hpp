@@ -2,8 +2,8 @@
 // Created by Ilia.Motornyi on 15/04/2019.
 //
 
-#ifndef MECH_DECK_MODULE_KEYBOARD_H
-#define MECH_DECK_MODULE_KEYBOARD_HPP
+#ifndef MECH_DECK_MODULE_HPP
+#define MECH_DECK_MODULE_HPP
 
 #include "main.h"
 
@@ -32,7 +32,7 @@ enum LightsState {
 
 #define WIND_TABLE_LEN 5
 struct NaviSettings {
-    int windAngleCorrection ;
+    unsigned int windAngleCorrection ;
     double windTpsToMs [WIND_TABLE_LEN][2];
     double minWindMs ;
     int tooCloseAngle;
@@ -68,6 +68,7 @@ struct NaviState {
     uint_fast64_t lastPosTS;
     uint_fast64_t lastWindTS;
     uint_fast64_t lastScreenTS;
+    bool waitUntilKeysReleased;
 } ;
 
 extern struct NaviState state;
@@ -75,5 +76,6 @@ extern struct NaviSettings naviSettings;
 
 
 enum DeviceState radioCheck();
+void processKeyboard();
 
-#endif //MECH_DECK_MODULE_KEYBOARD_H
+#endif //MECH_DECK_MODULE_HPP

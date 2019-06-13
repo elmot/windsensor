@@ -3,18 +3,20 @@
 //
 #include "deck-module.hpp"
 
+
 static void adjustBackLight() {
-    if (state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) {
+    if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
         state.backLightPwm += 10;
         if (state.backLightPwm > 99) {
             state.backLightPwm = 99;
         }
-    } else if (state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) {
+    } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyUp == 0)) {
         state.backLightPwm -= 10;
         if (state.backLightPwm < 0) {
             state.backLightPwm = 0;
         }
     }
+    //todo implement via Display::bgBrightness
     DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - state.backLightPwm);
 }
 
@@ -57,6 +59,7 @@ void mainLoop() {
         __enable_irq();
         updateKeyboard(ts);
         adjustBackLight();
+        processKeyboard();
         updateLcd(ts);
         outputNmea();
 
@@ -66,4 +69,5 @@ void mainLoop() {
 #pragma clang diagnostic pop
 
 }
+
 

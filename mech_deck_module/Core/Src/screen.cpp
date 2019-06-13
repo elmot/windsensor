@@ -26,6 +26,11 @@
 MaskedDisplay maskedScreen = MaskedDisplay();
 AffineTransform affineScreen = AffineTransform(maskedScreen);
 
+MainScreen mainScreen = MainScreen();
+AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
+
+Screen *activeScreen = &mainScreen;
+
 static void writeCommand0(uint8_t command);
 
 static void writeCommand1(uint8_t command, u_int8_t param1);
@@ -37,8 +42,6 @@ static void writeData(uint8_t dataByte);
 static void lcmClear();
 
 static void locateGraphZero();
-
-void dashedArrow();
 
 static uint8_t screen_buffer[WIDTH_BYTES * HEIGHT];
 
@@ -103,7 +106,7 @@ void bigCharOutput(int charCode, int xBytes, int yPos) {
     Display::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
-void drawScreenData() {
+void MainScreen::drawScreenData() {
     if (state.windAngle >= 0) {
         int angle;
         int direction;
@@ -144,12 +147,24 @@ void updateLcd(uint_fast64_t timeStamp) {
     if (timeStamp - lastUpdate < 50) return;
     lastUpdate = timeStamp;
 
+    activeScreen->updatePicture();
+    Display::paint();
+}
+
+void MainScreen::processKeyboard() {
+    if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED)) {
+        activeScreen = &angleCorrectScreen;
+        state.waitUntilKeysReleased = true;
+    }
+}
+
+void MainScreen::updatePicture() {
     Display::copyPict(BACKGROUND);
     switch (state.anemState) {
         case OK:
             affineScreen.reset();
-            affineScreen.rotate((int)-state.windAngle / 180.0 * M_PI, 63, 63);
-            dashedArrow();
+            affineScreen.rotate((int) -state.windAngle / 180.0 * M_PI, 63, 63);
+            affineScreen.line(63, 127, 63, 63, 3, "1");
             drawScreenData();
             break;
         case CONN_TIMEOUT:
@@ -159,14 +174,7 @@ void updateLcd(uint_fast64_t timeStamp) {
         default:
             charOutput(CHAR_CONN_FAIL, 6, 38);
             break;
-
     }
-
-    Display::paint();
-}
-
-void dashedArrow() {
-    affineScreen.line(63, 127, 63, 63, 3,"1");
 }
 
 void lcmClear() {
@@ -404,4 +412,34 @@ void MaskedDisplay::pixel(float x, float y, int color) {
     if ((x < 39) || (x > 87) || (y > 70) || (y < 37)) {
         Display::pixel(x, y, color);
     }
+}
+
+void processKeyboard() {
+    if (state.waitUntilKeysReleased) {
+        if (state.keyUp || state.keyDown || state.keyCancel || state.keyOk) {
+            state.waitUntilKeysReleased = false;
+        }
+        return;
+    }
+    activeScreen->processKeyboard();
+}
+
+void AngleCorrectScreen::processKeyboard() {
+    //todo change values
+    //todo save
+    //todo next
+    //todo close
+}
+
+void AngleCorrectScreen::updatePicture() {
+    Display::copyPict(CORRECT_ANGLE_BACKGROUND);
+    //todo show comm failure
+    //todo cursor , button save, button next, button close
+    bigCharOutput(naviSettings.windAngleCorrection / 100, 0, 50);
+    bigCharOutput(naviSettings.windAngleCorrection / 10 % 10, 5, 50);
+    bigCharOutput(naviSettings.windAngleCorrection % 10, 10, 50);
+
+    charOutput(state.windAngle / 100, 18, 58);
+    charOutput(state.windAngle / 10 % 10, 22, 58);
+    charOutput(state.windAngle % 10, 26, 58);
 }

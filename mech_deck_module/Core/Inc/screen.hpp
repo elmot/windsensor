@@ -99,24 +99,26 @@ private:
 
 class Screen {
 public:
-    virtual void updatePicture();
+    virtual void updatePicture() = 0;
 
-    virtual void processKeyboard();
+    virtual void processKeyboard() = 0;
 };
 
 class MainScreen : public Screen {
+private:
+    void drawScreenData();
 public:
-    virtual void updatePicture() override;
+    void updatePicture() override;
 
-    virtual void processKeyboard() override;
+    void processKeyboard() override;
 
 };
 
 class AngleCorrectScreen : public Screen {
 public:
-    virtual void updatePicture() override;
+    void updatePicture() override;
 
-    virtual void processKeyboard() override;
+    void processKeyboard() override;
 
 };
 
