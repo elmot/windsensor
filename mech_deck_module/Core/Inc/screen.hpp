@@ -7,13 +7,13 @@
 
 #include "main.h"
 
-class Screen {
+class Display {
 public:
     void static bgBrightness(uint16_t);
 
     void static copyPict(const uint8_t *background);
 
-    void static displayScreen();
+    void static paint();
 
     void static clearPict();
 
@@ -30,16 +30,16 @@ public:
 
 };
 
-class MaskedScreen : public Screen {
+class MaskedDisplay : public Display {
 public:
     void pixel(float x, float y, int color) override;
 };
 
-class AffineTransform : public Screen {
+class AffineTransform : public Display {
 public:
-    explicit AffineTransform(Screen &screen);
+    explicit AffineTransform(Display &screen);
 
-    void pixel(float x, float y, int color) override ;
+    void pixel(float x, float y, int color) override;
 
     void line(float x1, float y1, float x2, float y2, float width, const char *pattern) override;
 
@@ -94,9 +94,30 @@ private:
      */
     float m12 = 0;
 
-    Screen &screen;
+    Display &screen;
 };
 
+class Screen {
+public:
+    virtual void updatePicture();
 
-extern Screen mainScreen;
+    virtual void processKeyboard();
+};
+
+class MainScreen : public Screen {
+public:
+    virtual void updatePicture() override;
+
+    virtual void processKeyboard() override;
+
+};
+
+class AngleCorrectScreen : public Screen {
+public:
+    virtual void updatePicture() override;
+
+    virtual void processKeyboard() override;
+
+};
+
 #endif //MECH_DECK_MODULE_SCREEN_H

@@ -23,7 +23,7 @@
 #define CHAR_ANCHOR 13
 #define CHAR_NAVI 14
 
-MaskedScreen maskedScreen = MaskedScreen();
+MaskedDisplay maskedScreen = MaskedDisplay();
 AffineTransform affineScreen = AffineTransform(maskedScreen);
 
 static void writeCommand0(uint8_t command);
@@ -50,6 +50,10 @@ static const uint8_t BACKGROUND[] = {
 #include "background.txt"
 };
 
+static const uint8_t CORRECT_ANGLE_BACKGROUND[] = {
+#include "angle-corr.txt"
+};
+
 static const uint8_t FONT[] = {
 #include "font.txt"
 };
@@ -71,12 +75,12 @@ void initLcd(void) {
     writeCommand0(0x80);//Internal GC rom mode, OR mode
     lcmClear();
     writeCommand0(0x98);//text off, graphics on
-    Screen::bgBrightness(Screen::BG_MAX);
+    Display::bgBrightness(Display::BG_MAX);
 }
 
 void splashLcd(void) {
     for (int i = 0; i < (2 * WIDTH_BYTES) + 1; i++) {
-        Screen::copyPict(SPLASH_PICTURE);
+        Display::copyPict(SPLASH_PICTURE);
         for (int j = 0; j < HEIGHT; j++) {
             int k = -j / 5 + i;
             if (k < 0) k = 0;
@@ -84,7 +88,7 @@ void splashLcd(void) {
                 screen_buffer[j * WIDTH_BYTES + k] = 0;
             }
         }
-        Screen::displayScreen();
+        Display::paint();
         msDelay(1);
         LL_IWDG_ReloadCounter(IWDG);
     }
@@ -92,11 +96,11 @@ void splashLcd(void) {
 }
 
 void charOutput(int charCode, int xBytes, int yPos) {
-    Screen::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
+    Display::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
 }
 
 void bigCharOutput(int charCode, int xBytes, int yPos) {
-    Screen::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
+    Display::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
 void drawScreenData() {
@@ -140,7 +144,7 @@ void updateLcd(uint_fast64_t timeStamp) {
     if (timeStamp - lastUpdate < 50) return;
     lastUpdate = timeStamp;
 
-    Screen::copyPict( BACKGROUND);
+    Display::copyPict(BACKGROUND);
     switch (state.anemState) {
         case OK:
             affineScreen.reset();
@@ -150,7 +154,7 @@ void updateLcd(uint_fast64_t timeStamp) {
             break;
         case CONN_TIMEOUT:
         case CONN_FAIL:
-            Screen::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
+            Display::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
             break;
         default:
             charOutput(CHAR_CONN_FAIL, 6, 38);
@@ -158,31 +162,11 @@ void updateLcd(uint_fast64_t timeStamp) {
 
     }
 
-    Screen::displayScreen();
+    Display::paint();
 }
 
 void dashedArrow() {
     affineScreen.line(63, 127, 63, 63, 3,"1");
-/*
-    for (int i = 63; i < 128; i += 4) {
-        affineScreen.pixel(62, i, 1);
-        affineScreen.pixel(63, i, 1);
-        affineScreen.pixel(64, i, 1);
-        affineScreen.pixel(65, i, 1);
-        affineScreen.pixel(62, i + 1, 1);
-        affineScreen.pixel(63, i + 1, 1);
-        affineScreen.pixel(64, i + 1, 1);
-        affineScreen.pixel(65, i + 1, 1);
-        affineScreen.pixel(62, i + 2, 0);
-        affineScreen.pixel(63, i + 2, 0);
-        affineScreen.pixel(64, i + 2, 0);
-        affineScreen.pixel(65, i + 2, 0);
-        affineScreen.pixel(62, i + 3, 0);
-        affineScreen.pixel(63, i + 3, 0);
-        affineScreen.pixel(64, i + 3, 0);
-        affineScreen.pixel(65, i + 3, 0);
-    }
-*/
 }
 
 void lcmClear() {
@@ -199,7 +183,7 @@ void locateGraphZero() {
     writeCommand2(0x24, 0, 0);
 }
 
-void Screen::displayScreen() {
+void Display::paint() {
     locateGraphZero();
     writeCommand0(0xb0);
     for (int y = HEIGHT - 1; y >= 0; y--) {
@@ -283,23 +267,23 @@ void writeCommand2(uint8_t command, u_int8_t param1, u_int8_t param2) {
     writeCommand1(command, param2);
 }
 
-void Screen::bgBrightness(uint16_t brightness) {
+void Display::bgBrightness(uint16_t brightness) {
     DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - brightness);
 }
 
-void inline Screen::copyPict(const uint8_t *background) {
+void inline Display::copyPict(const uint8_t *background) {
     memcpy(screen_buffer, background, WIDTH_BYTES * HEIGHT);
 }
 
-void inline Screen::clearPict() {
+void inline Display::clearPict() {
     memset(screen_buffer, 0, HEIGHT * WIDTH_BYTES);
 }
 
-void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict) {
+void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict) {
     copyPict(xBytes, y, wBytes, h, 0, pict);
 }
 
-void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMask, const uint8_t *pict) {
+void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMask, const uint8_t *pict) {
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
             screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] |= pict[iy * wBytes + ix] ^ xorMask;
@@ -307,7 +291,7 @@ void Screen::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMas
     }
 }
 
-void Screen::pixel(float fX, float fY, int color) {
+void Display::pixel(float fX, float fY, int color) {
     uint16_t x = lroundf(0.5F + fX);
     uint16_t y = lroundf(0.5F + fY);
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
@@ -362,7 +346,7 @@ void AffineTransform::line(float x1, float y1, float x2, float y2, float width, 
     screen.line(tX1, tY1, tX2, tY2, width, pattern);
 }
 
-AffineTransform::AffineTransform(class Screen &ascreen) : screen(ascreen) {
+AffineTransform::AffineTransform(class Display &ascreen) : screen(ascreen) {
     reset();
 }
 
@@ -377,7 +361,7 @@ inline void swap(int &a, int &b) {
 
 #pragma clang diagnostic pop
 
-void Screen::line(float fX1, float fY1, float fX2, float fY2, float fWidth, const char *pattern) {
+void Display::line(float fX1, float fY1, float fX2, float fY2, float fWidth, const char *pattern) {
     int x1 = lroundf(fX1);
     int x2 = lroundf(fX2);
 
@@ -416,8 +400,8 @@ void Screen::line(float fX1, float fY1, float fX2, float fY2, float fWidth, cons
     }
 }
 
-void MaskedScreen::pixel(float x, float y, int color) {
+void MaskedDisplay::pixel(float x, float y, int color) {
     if ((x < 39) || (x > 87) || (y > 70) || (y < 37)) {
-        Screen::pixel(x, y, color);
+        Display::pixel(x, y, color);
     }
 }
