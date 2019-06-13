@@ -55,7 +55,7 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = 0x20018000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x1000;      /* required amount of heap  */
+_Min_Heap_Size = 0x800;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
@@ -63,7 +63,8 @@ MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
 RAM2 (xrw)      : ORIGIN = 0x10000000, LENGTH = 32K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1022K
+ FLASH_DATA(rw) : ORIGIN = 0x80FF800, LENGTH = 2K
 }
 
 /* Define output sections */
@@ -188,7 +189,11 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+  ._flash_data_store :
+  {
+    . = ALIGN(4);
+    *(.flash_data) /* data */
+  } >FLASH_DATA
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

@@ -110,7 +110,7 @@ void drawScreenData() {
             angle = state.windAngle;
             direction = 12;
         }
-        if(angle <33 || angle > 160) {
+        if (angle < naviSettings.tooCloseAngle || angle > naviSettings.tooFreeAngle) {
             bigCharOutput(13, 25, 32);
         }
         bigCharOutput(direction, 20, 32);

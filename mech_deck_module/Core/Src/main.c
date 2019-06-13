@@ -54,7 +54,6 @@
 
 /* USER CODE END PV */
 
-
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
@@ -77,7 +76,7 @@ struct NaviState state = {
         .anemState = CONN_TIMEOUT,
         .gpsState = CONN_TIMEOUT,
         .windAngle = -1};
-struct NaviSettings naviSettings = {
+__attribute__((section (".flash_data"))) struct NaviSettings naviSettings = {
         .windAngleCorrection =-15,
         .minWindMs = 1,
         .tooCloseAngle = 33,
