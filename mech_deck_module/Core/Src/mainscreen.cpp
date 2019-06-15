@@ -50,7 +50,7 @@ void MainScreen::drawScreenData() {
 
 void MainScreen::processKeyboard() {
     if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED)) {
-        nextScreen(&angleCorrectScreen);
+        nextScreen(&alarmCorrectScreen);
     }
         if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
             state.backLightPwm += 10;

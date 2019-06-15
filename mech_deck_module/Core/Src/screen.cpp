@@ -356,3 +356,28 @@ void processKeyboard() {
     }
     Screen::activeScreen->processKeyboard();
 }
+
+void SettingsScreen::changeValue(int delta, unsigned int *changeableValue, unsigned int max, unsigned int min,
+                                 int activePosition) const {
+    int digitDivider;
+    switch (activePosition) {
+        case 0:
+            digitDivider = 100;
+            break;
+        case 1:
+            digitDivider = 10;
+            break;
+        case 2:
+            digitDivider = 1;
+            break;
+        default:
+            return;
+    }
+    int digitValue = (*changeableValue / digitDivider) % 10;
+    int newDigitValue = (digitValue + delta + 10) % 10;
+    int correctionValue = (newDigitValue - digitValue) * digitDivider;
+    *changeableValue += correctionValue;
+    if (*changeableValue >= max) *changeableValue = min;
+    else
+        while (*changeableValue < min) *changeableValue += max;
+}

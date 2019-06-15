@@ -150,6 +150,7 @@ protected:
     static const int SAVE_POSITION = 0;
     static const int CLOSE_POSITION = 1;
     static const int NEXT_POSITION = 2;
+    static const int LAST_STD_BUTTON = NEXT_POSITION;
     int position = NEXT_POSITION;
 
     void processKeyboard() override;
@@ -163,13 +164,16 @@ protected:
 
     virtual void save();
 
-    virtual int positionsCount() = 0;
+    virtual int maxPosition() = 0;
 
     virtual void changeValue(int delta) = 0;
 
     virtual bool isChanged() = 0;
 
     void drawButtons();
+
+    void changeValue(int delta, unsigned int *changeableValue, unsigned int max, unsigned int min,
+                     int activePosition) const;
 
 protected:
     NaviSettings localSettings = *naviSettings;
@@ -182,11 +186,9 @@ public:
     void updatePicture() override;
 
 protected:
-    void gotoNextScreen() override {
-        nextScreen(&mainScreen);
-    }
+    void gotoNextScreen() override;
 
-    int positionsCount() override { return 6; };
+    int maxPosition() override;
 
     void changeValue(int delta) override;
 
@@ -196,13 +198,31 @@ protected:
 
 extern AngleCorrectScreen angleCorrectScreen;
 
+class AlarmCorrectScreen : public SettingsScreen {
+public:
+    void updatePicture() override;
+
+protected:
+    void gotoNextScreen() override;
+
+    int maxPosition() override;
+
+    void changeValue(int delta) override;
+
+    bool isChanged() override;
+
+    void draw3digits(unsigned int val, unsigned int xBytes, unsigned int y, int activepos) const;
+};
+
+extern AlarmCorrectScreen alarmCorrectScreen;
+
 extern AffineTransform affineScreen;
 
 extern const uint8_t FONT[];
 extern const uint8_t FONT40x48[];
 
-inline void charOutput(int charCode, int xBytes, int yPos) {
-    Display::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
+inline void charOutput(int charCode, int xBytes, int yPos, uint8_t xorMask = 0) {
+    Display::copyPict(xBytes, yPos, 4, 32, xorMask, &FONT[32 * 4 * (14 - charCode)]);
 }
 
 inline void bigCharOutput(int charCode, int xBytes, int yPos, bool invert = false) {
