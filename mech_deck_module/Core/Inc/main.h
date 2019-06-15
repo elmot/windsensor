@@ -28,25 +28,21 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32l4xx_hal.h"
 #include "stm32l4xx_ll_iwdg.h"
-#include "stm32l4xx_ll_crs.h"
+#include "stm32l4xx_ll_spi.h"
+#include "stm32l4xx_ll_tim.h"
+#include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_rcc.h"
-#include "stm32l4xx_ll_bus.h"
+#include "stm32l4xx.h"
 #include "stm32l4xx_ll_system.h"
+#include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_exti.h"
+#include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_cortex.h"
 #include "stm32l4xx_ll_utils.h"
 #include "stm32l4xx_ll_pwr.h"
 #include "stm32l4xx_ll_dma.h"
-#include "stm32l4xx_ll_spi.h"
-#include "stm32l4xx_ll_tim.h"
-#include "stm32l4xx_ll_usart.h"
-#include "stm32l4xx.h"
-#include "stm32l4xx_ll_gpio.h"
-
-#if defined(USE_FULL_ASSERT)
-#include "stm32_assert.h"
-#endif /* USE_FULL_ASSERT */
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -146,22 +142,11 @@ inline void msDelay(int delay) {
 #define KEY_DOWN_GPIO_Port GPIOB
 #define KEY_OK_Pin LL_GPIO_PIN_5
 #define KEY_OK_GPIO_Port GPIOB
-#ifndef NVIC_PRIORITYGROUP_0
-#define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
-                                                                 4 bits for subpriority */
-#define NVIC_PRIORITYGROUP_1         ((uint32_t)0x00000006) /*!< 1 bit  for pre-emption priority,
-                                                                 3 bits for subpriority */
-#define NVIC_PRIORITYGROUP_2         ((uint32_t)0x00000005) /*!< 2 bits for pre-emption priority,
-                                                                 2 bits for subpriority */
-#define NVIC_PRIORITYGROUP_3         ((uint32_t)0x00000004) /*!< 3 bits for pre-emption priority,
-                                                                 1 bit  for subpriority */
-#define NVIC_PRIORITYGROUP_4         ((uint32_t)0x00000003) /*!< 4 bits for pre-emption priority,
-                                                                 0 bit  for subpriority */
-#endif
 /* USER CODE BEGIN Private defines */
 void initLcd(void);
-void splashLcd(void);
+void findSettings(void);
 
+void splashLcd(void);
 void updateLcd(uint_fast64_t timestamp);
 void outputNmea(void);
 
@@ -194,14 +179,18 @@ enum LightsState {
     ANCHOR,
     NAVI
 };
+
+#define CONSISTENCY_SIGN_VALUE 0xAA5533CC18819669ul
 struct NaviSettings {
     unsigned int windAngleCorrection ;
     double windTpsToMs [WIND_TABLE_LEN][2];
     double minWindMs ;
     int tooCloseAngle;
     int tooFreeAngle;
-
+    unsigned long long CONSISTENCY_SIGN;
 };
+
+extern struct NaviSettings flashSettings; // defined in liker script in a flash page
 
 
 struct NaviState {
@@ -238,7 +227,7 @@ struct NaviState {
 } ;
 
 extern struct NaviState state;
-extern struct NaviSettings naviSettings;
+extern const struct NaviSettings * naviSettings;
 
 
 enum DeviceState radioCheck();

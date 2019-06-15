@@ -109,7 +109,7 @@ void radioLoop(void) {
         default:
             button = '1';
     }
-    if (radioDebug) printf("$ELMOT,PAYLOAD:>%s<TX:,", button);
+    if (radioDebug) printf("$ELMOT,PAYLOAD:>%c<TX:,", button);
 
     // Transmit a packet
     char buffer[30] = "B?;";
@@ -135,7 +135,7 @@ void radioLoop(void) {
                     if (radioDebug) printf("ANGLE_SENSOR_ERROR");
                 } else {
                     state.windAngleNonCorrected = angle;
-                    state.windAngle = (angle + naviSettings.windAngleCorrection) % 360;
+                    state.windAngle = (angle + naviSettings->windAngleCorrection) % 360;
                     state.anemState = OK;
                 }
                 state.windSpdMps = calcSpeed(speedReport);
@@ -164,14 +164,14 @@ void radioLoop(void) {
 double calcSpeed(int speedReport) {
     static const double DOUBLE_ZERO[] = {0, 0};
     const double *lowBound = DOUBLE_ZERO;
-    double *highBound;
+    const double *highBound;
     int idx = 0;
     if (speedReport <= 0) {
         return 0;
     }
     int tpm = 60 * 10000 / speedReport;
     for (; idx < WIND_TABLE_LEN; idx++) {
-        double v = naviSettings.windTpsToMs[idx][0];
+        double v = naviSettings->windTpsToMs[idx][0];
         if (v == 0) {
             idx--;
             break;
@@ -179,13 +179,13 @@ double calcSpeed(int speedReport) {
         if (v > tpm) break;
     }
     if (idx < 0) return 0;
-    highBound = naviSettings.windTpsToMs[idx];
+    highBound = naviSettings->windTpsToMs[idx];
     if (idx > 0) {
-        lowBound = naviSettings.windTpsToMs[idx - 1];
+        lowBound = naviSettings->windTpsToMs[idx - 1];
     }
 
     double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (tpm - lowBound[0]) / (highBound[0] - lowBound[0]);
-    return speed < naviSettings.minWindMs ? 0 : speed;
+    return speed < naviSettings->minWindMs ? 0 : speed;
 }
 
 void outputNmea() {

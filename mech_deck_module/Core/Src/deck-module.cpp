@@ -4,22 +4,6 @@
 #include "deck-module.hpp"
 
 
-static void adjustBackLight() {
-    if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
-        state.backLightPwm += 10;
-        if (state.backLightPwm > 99) {
-            state.backLightPwm = 99;
-        }
-    } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyUp == 0)) {
-        state.backLightPwm -= 10;
-        if (state.backLightPwm < 0) {
-            state.backLightPwm = 0;
-        }
-    }
-    //todo implement via Display::bgBrightness
-    DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - state.backLightPwm);
-}
-
 void mainLoop() {
     /* Enable output channel 1 */
     LL_TIM_CC_EnableChannel(DISP_BG_TIM, DISP_BG_TIM_CHANNEL);
@@ -31,6 +15,7 @@ void mainLoop() {
     LL_InitTick(SystemCoreClock, 200);
     LL_SYSTICK_EnableIT();
 
+    findSettings();
     initLcd();
     radioCheck();
     radioInit();
@@ -58,7 +43,6 @@ void mainLoop() {
         uint64_t ts = sysTicks();
         __enable_irq();
         updateKeyboard(ts);
-        adjustBackLight();
         processKeyboard();
         updateLcd(ts);
         outputNmea();

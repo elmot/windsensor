@@ -192,6 +192,7 @@ SECTIONS
   ._flash_data_store :
   {
     . = ALIGN(4);
+    flashSettings = .;
     *(.flash_data) /* data */
   } >FLASH_DATA
 

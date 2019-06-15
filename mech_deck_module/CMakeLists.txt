@@ -30,12 +30,12 @@ SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections,--print-memory-usage,-u,_print
 PROJECT(mech_deck_module C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
 
-add_definitions(-DUSE_FULL_LL_DRIVER -D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DSTM32L476xx -DHSE_VALUE=8000000 -DHSE_STARTUP_TIMEOUT=100 -DLSE_STARTUP_TIMEOUT=5000 -DLSE_VALUE=32768 -DMSI_VALUE=4000000 -DEXTERNALSAI1_CLOCK_VALUE=2097000 -DEXTERNALSAI2_CLOCK_VALUE=2097000 -DHSI_VALUE=16000000 -DLSI_VALUE=32000 -DVDD_VALUE=3300 -DPREFETCH_ENABLE=1 -DINSTRUCTION_CACHE_ENABLE=1 -DDATA_CACHE_ENABLE=1)
+add_definitions(-DUSE_FULL_LL_DRIVER -D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DSTM32L476xx -DUSE_HAL_DRIVER)
 
 add_definitions(-DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT=1)
 file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Core/*.*")
 
-include_directories(Core/Inc Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include)
+include_directories(Core/Inc Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include Drivers/STM32L4xx_HAL_Driver/Inc/Legacy)
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 

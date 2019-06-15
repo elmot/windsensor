@@ -34,8 +34,8 @@ public:
 
     void static copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict);
 
-    static const uint16_t BG_MAX = 0;
-    static const uint16_t BG_MIN = 99;
+    static const uint16_t BG_MAX = 99;
+    static const uint16_t BG_MIN = 0;
 
     virtual void pixel(float x, float y, int color);
 
@@ -112,15 +112,31 @@ private:
 };
 
 class Screen {
+protected:
+    virtual void enter() {};
+
 public:
+    static Screen *activeScreen;
+
     virtual void updatePicture() = 0;
 
     virtual void processKeyboard() = 0;
+
+    static void nextScreen(Screen *next) {
+        activeScreen = next;
+        activeScreen->enter();
+        state.waitUntilKeysReleased = true;
+    };
+
+    static void invertBox(int xBytes, int y, int wBytes, int h);
+    static void chessBox(int xBytes, int y, int wBytes, int h);
+
 };
 
 class MainScreen : public Screen {
 private:
-    void drawScreenData();
+    static void drawScreenData();
+
 public:
     void updatePicture() override;
 
@@ -128,19 +144,59 @@ public:
 
 };
 
-class AngleCorrectScreen : public Screen {
-public:
-    void updatePicture() override;
+
+class SettingsScreen : public Screen {
+protected:
+    static const int SAVE_POSITION = 0;
+    static const int CLOSE_POSITION = 1;
+    static const int NEXT_POSITION = 2;
+    int position = NEXT_POSITION;
 
     void processKeyboard() override;
 
-};
+    void enter() override {
+        position = NEXT_POSITION;
+        localSettings = *naviSettings;
+    };
 
-extern AffineTransform affineScreen;
+    virtual void gotoNextScreen() = 0;
+
+    virtual void save();
+
+    virtual int positionsCount() = 0;
+
+    virtual void changeValue(int delta) = 0;
+
+    virtual bool isChanged() = 0;
+
+    void drawButtons();
+
+protected:
+    NaviSettings localSettings = *naviSettings;
+};
 
 extern MainScreen mainScreen;
+
+class AngleCorrectScreen : public SettingsScreen {
+public:
+    void updatePicture() override;
+
+protected:
+    void gotoNextScreen() override {
+        nextScreen(&mainScreen);
+    }
+
+    int positionsCount() override { return 6; };
+
+    void changeValue(int delta) override;
+
+    bool isChanged() override;
+
+};
+
 extern AngleCorrectScreen angleCorrectScreen;
-extern Screen *activeScreen;
+
+extern AffineTransform affineScreen;
 
 extern const uint8_t FONT[];
 extern const uint8_t FONT40x48[];
@@ -149,8 +205,8 @@ inline void charOutput(int charCode, int xBytes, int yPos) {
     Display::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
 }
 
-inline void bigCharOutput(int charCode, int xBytes, int yPos) {
-    Display::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
+inline void bigCharOutput(int charCode, int xBytes, int yPos, bool invert = false) {
+    Display::copyPict(xBytes, yPos, 5, 48, invert ? 0xff : 0, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
 

@@ -21,7 +21,7 @@ AffineTransform affineScreen = AffineTransform(maskedScreen);
 
 AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
 
-Screen *activeScreen = &mainScreen;
+Screen *Screen::activeScreen = &mainScreen;
 
 static void writeCommand0(uint8_t command);
 
@@ -62,7 +62,7 @@ void initLcd(void) {
     writeCommand0(0x80);//Internal GC rom mode, OR mode
     lcmClear();
     writeCommand0(0x98);//text off, graphics on
-    Display::bgBrightness(Display::BG_MAX);
+    Display::bgBrightness(Display::BG_MIN);
 }
 
 void splashLcd(void) {
@@ -86,8 +86,8 @@ void updateLcd(uint_fast64_t timeStamp) {
     static uint_fast64_t lastUpdate = 0;
     if (timeStamp - lastUpdate < 50) return;
     lastUpdate = timeStamp;
-
-    activeScreen->updatePicture();
+    Display::clearPict();
+    Screen::activeScreen->updatePicture();
     Display::paint();
 }
 
@@ -190,7 +190,7 @@ void writeCommand2(uint8_t command, u_int8_t param1, u_int8_t param2) {
 }
 
 void Display::bgBrightness(uint16_t brightness) {
-    DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - brightness);
+    DISP_BG_TIM_SETPULSE(DISP_BG_TIM, BG_MAX - brightness);
 }
 
 void Display::copyPict(const uint8_t *background) {
@@ -209,6 +209,25 @@ void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMa
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
             screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] |= pict[iy * wBytes + ix] ^ xorMask;
+        }
+    }
+}
+
+void Screen::chessBox(int xBytes, int y, int wBytes, int h) {
+    for (int iy = 0; iy < h; iy += 2) {
+        for (int ix = 0; ix < wBytes; ix++) {
+            int idx = (y + iy) * WIDTH_BYTES + xBytes + ix;
+            screen_buffer[idx] |= 0x55;
+            screen_buffer[idx + WIDTH_BYTES] |= 0xAA;
+        }
+    }
+}
+
+void Screen::invertBox(int xBytes, int y, int wBytes, int h) {
+    for (int iy = 0; iy < h; iy++) {
+        for (int ix = 0; ix < wBytes; ix++) {
+            int idx = (y + iy) * WIDTH_BYTES + xBytes + ix;
+            screen_buffer[idx] = ~screen_buffer[idx];
         }
     }
 }
@@ -330,10 +349,10 @@ void MaskedDisplay::pixel(float x, float y, int color) {
 
 void processKeyboard() {
     if (state.waitUntilKeysReleased) {
-        if (state.keyUp || state.keyDown || state.keyCancel || state.keyOk) {
+        if (!(state.keyUp || state.keyDown || state.keyCancel || state.keyOk)) {
             state.waitUntilKeysReleased = false;
         }
         return;
     }
-    activeScreen->processKeyboard();
+    Screen::activeScreen->processKeyboard();
 }

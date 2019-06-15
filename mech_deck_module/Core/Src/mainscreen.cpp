@@ -23,7 +23,7 @@ void MainScreen::drawScreenData() {
             angle = state.windAngle;
             direction = 12;
         }
-        if (angle < naviSettings.tooCloseAngle || angle > naviSettings.tooFreeAngle) {
+        if (angle < naviSettings->tooCloseAngle || angle > naviSettings->tooFreeAngle) {
             bigCharOutput(13, 25, 32);
         }
         bigCharOutput(direction, 20, 32);
@@ -34,7 +34,7 @@ void MainScreen::drawScreenData() {
 
     charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
     charOutput((int) state.windSpdMps % 10, 21, 0);
-    if (state.backLightPwm > 0) {
+    if (state.backLightPwm != Display::BG_MIN) {
         charOutput(CHAR_BACK_LIGHT, 0, 0);
     }
     switch (state.lights) {
@@ -50,9 +50,20 @@ void MainScreen::drawScreenData() {
 
 void MainScreen::processKeyboard() {
     if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED)) {
-        activeScreen = &angleCorrectScreen;
-        state.waitUntilKeysReleased = true;
+        nextScreen(&angleCorrectScreen);
     }
+        if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
+            state.backLightPwm += 10;
+            if (state.backLightPwm > Display::BG_MAX) {
+                state.backLightPwm = Display::BG_MAX;
+            }
+        } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyUp == 0)) {
+            state.backLightPwm -= 10;
+            if (state.backLightPwm < Display::BG_MIN) {
+                state.backLightPwm = Display::BG_MIN;
+            }
+        }
+    Display::bgBrightness(state.backLightPwm);
 }
 
 void MainScreen::updatePicture() {
