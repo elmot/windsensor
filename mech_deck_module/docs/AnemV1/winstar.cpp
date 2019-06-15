@@ -136,7 +136,7 @@ void WinstarLCD::writeByte(uint8_t regNum, uint8_t value)
 }
 
 void WinstarLCD::delay (void)
-{//TODO make with timer
+{// make with timer
 	for(int w = 0; w <100;w++)
 	{__NOP();}
 }

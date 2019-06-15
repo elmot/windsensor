@@ -4,8 +4,6 @@
 
 #include <deck-module.hpp>
 #include <math.h>
-#include "screen.hpp"
-
 
 #define WIDTH 240
 #define WIDTH_BYTES (WIDTH / 8)
@@ -18,15 +16,9 @@
 #define LCM_SET_GRAPH_HOME 0x42
 #define LCM_SET_GRAPH_COLS 0x43
 
-#define CHAR_BACK_LIGHT 10
-#define CHAR_CONN_FAIL 12
-#define CHAR_ANCHOR 13
-#define CHAR_NAVI 14
-
 MaskedDisplay maskedScreen = MaskedDisplay();
 AffineTransform affineScreen = AffineTransform(maskedScreen);
 
-MainScreen mainScreen = MainScreen();
 AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
 
 Screen *activeScreen = &mainScreen;
@@ -46,23 +38,15 @@ static void locateGraphZero();
 static uint8_t screen_buffer[WIDTH_BYTES * HEIGHT];
 
 static const uint8_t SPLASH_PICTURE[] = {
-#include "splash.txt"
+#include "bitmaps/splash.txt"
 };
 
-static const uint8_t BACKGROUND[] = {
-#include "background.txt"
+const uint8_t FONT[] = {
+#include "bitmaps/font.txt"
 };
 
-static const uint8_t CORRECT_ANGLE_BACKGROUND[] = {
-#include "angle-corr.txt"
-};
-
-static const uint8_t FONT[] = {
-#include "font.txt"
-};
-
-static const uint8_t FONT40x48[] = {
-#include "font40x48.txt"
+const uint8_t FONT40x48[] = {
+#include "bitmaps/font40x48.txt"
 };
 
 void initLcd(void) {
@@ -98,50 +82,6 @@ void splashLcd(void) {
     msDelay(70);
 }
 
-void charOutput(int charCode, int xBytes, int yPos) {
-    Display::copyPict(xBytes, yPos, 4, 32, &FONT[32 * 4 * (14 - charCode)]);
-}
-
-void bigCharOutput(int charCode, int xBytes, int yPos) {
-    Display::copyPict(xBytes, yPos, 5, 48, &FONT40x48[48 * 5 * (19 - charCode)]);
-}
-
-void MainScreen::drawScreenData() {
-    if (state.windAngle >= 0) {
-        int angle;
-        int direction;
-        if (state.windAngle > 180) {
-            angle = 360 - state.windAngle;
-            direction = 11;
-        } else {
-            angle = state.windAngle;
-            direction = 12;
-        }
-        if (angle < naviSettings.tooCloseAngle || angle > naviSettings.tooFreeAngle) {
-            bigCharOutput(13, 25, 32);
-        }
-        bigCharOutput(direction, 20, 32);
-        bigCharOutput(angle / 100, 15, 80);
-        bigCharOutput((angle / 10) % 10, 20, 80);
-        bigCharOutput(angle % 10, 25, 80);
-    }
-
-    charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
-    charOutput((int) state.windSpdMps % 10, 21, 0);
-    if (state.backLightPwm > 0) {
-        charOutput(CHAR_BACK_LIGHT, 0, 0);
-    }
-    switch (state.lights) {
-        case ANCHOR:
-            charOutput(CHAR_ANCHOR, 6, 38);
-            break;
-        case NAVI:
-            charOutput(CHAR_NAVI, 6, 38);
-            break;
-        default:;
-    }
-}
-
 void updateLcd(uint_fast64_t timeStamp) {
     static uint_fast64_t lastUpdate = 0;
     if (timeStamp - lastUpdate < 50) return;
@@ -149,32 +89,6 @@ void updateLcd(uint_fast64_t timeStamp) {
 
     activeScreen->updatePicture();
     Display::paint();
-}
-
-void MainScreen::processKeyboard() {
-    if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED)) {
-        activeScreen = &angleCorrectScreen;
-        state.waitUntilKeysReleased = true;
-    }
-}
-
-void MainScreen::updatePicture() {
-    Display::copyPict(BACKGROUND);
-    switch (state.anemState) {
-        case OK:
-            affineScreen.reset();
-            affineScreen.rotate((int) -state.windAngle / 180.0 * M_PI, 63, 63);
-            affineScreen.line(63, 127, 63, 63, 3, "1");
-            drawScreenData();
-            break;
-        case CONN_TIMEOUT:
-        case CONN_FAIL:
-            Display::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
-            break;
-        default:
-            charOutput(CHAR_CONN_FAIL, 6, 38);
-            break;
-    }
 }
 
 void lcmClear() {
@@ -279,11 +193,11 @@ void Display::bgBrightness(uint16_t brightness) {
     DISP_BG_TIM_SETPULSE(DISP_BG_TIM, 99 - brightness);
 }
 
-void inline Display::copyPict(const uint8_t *background) {
+void Display::copyPict(const uint8_t *background) {
     memcpy(screen_buffer, background, WIDTH_BYTES * HEIGHT);
 }
 
-void inline Display::clearPict() {
+void Display::clearPict() {
     memset(screen_buffer, 0, HEIGHT * WIDTH_BYTES);
 }
 
@@ -422,24 +336,4 @@ void processKeyboard() {
         return;
     }
     activeScreen->processKeyboard();
-}
-
-void AngleCorrectScreen::processKeyboard() {
-    //todo change values
-    //todo save
-    //todo next
-    //todo close
-}
-
-void AngleCorrectScreen::updatePicture() {
-    Display::copyPict(CORRECT_ANGLE_BACKGROUND);
-    //todo show comm failure
-    //todo cursor , button save, button next, button close
-    bigCharOutput(naviSettings.windAngleCorrection / 100, 0, 50);
-    bigCharOutput(naviSettings.windAngleCorrection / 10 % 10, 5, 50);
-    bigCharOutput(naviSettings.windAngleCorrection % 10, 10, 50);
-
-    charOutput(state.windAngle / 100, 18, 58);
-    charOutput(state.windAngle / 10 % 10, 22, 58);
-    charOutput(state.windAngle % 10, 26, 58);
 }

@@ -82,8 +82,6 @@ void MainScreen::drawScreen(void)
 		}
 	}
 
-  	/* TODO Display True Wind angle */
-  	/* TODO Display Counter-Tack angle*/
 	  /*Arrows*/
 //  affineTransform.reset();
 //  affineTransform.rotate(-1,winstarLCD.G_WIDTH/2,winstarLCD.G_HEIGHT/2);
@@ -176,13 +174,11 @@ float NavData::getWindSpeed()
 }
 void NavData::acceptNmea(char * nmeaLine)
 {
-//TODO implement
 }
 
 
 void MainScreen::tick(void)
 {
-//TODO implement
 }
 
 void UIManager::init(void)

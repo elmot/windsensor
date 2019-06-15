@@ -177,8 +177,72 @@ static inline uint_fast64_t sysTicks() {
 }
 
 void updateKeyboard(uint_fast64_t timeStamp);
+#define WIND_TABLE_LEN 5
 
 void mainLoop()__attribute__((noreturn));
+
+enum DeviceState {
+    CONN_FAIL,
+    CONN_TIMEOUT,
+    DATA_ERROR,
+    DATA_NO_FIX,
+    OK
+};
+
+enum LightsState {
+    OFF,
+    ANCHOR,
+    NAVI
+};
+struct NaviSettings {
+    unsigned int windAngleCorrection ;
+    double windTpsToMs [WIND_TABLE_LEN][2];
+    double minWindMs ;
+    int tooCloseAngle;
+    int tooFreeAngle;
+
+};
+
+
+struct NaviState {
+//public:
+    uint8_t keyUp;
+    uint8_t keyDown;
+    uint8_t keyOk;
+    uint8_t keyCancel;
+
+    enum DeviceState gpsState;
+    enum DeviceState anemState;
+
+    enum LightsState lights;
+
+    /***
+     * @brief value 0-100
+     *
+     */
+    int8_t backLightPwm;
+
+    double lat;
+    double lon;
+    double speedK;
+    double course;
+
+    double windSpdMps;
+    int windAngle;
+    int windAngleNonCorrected;
+
+    uint_fast64_t lastPosTS;
+    uint_fast64_t lastWindTS;
+    uint_fast64_t lastScreenTS;
+    bool waitUntilKeysReleased;
+} ;
+
+extern struct NaviState state;
+extern struct NaviSettings naviSettings;
+
+
+enum DeviceState radioCheck();
+void processKeyboard();
 
 
 /* USER CODE END Private defines */

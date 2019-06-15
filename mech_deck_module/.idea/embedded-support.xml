@@ -5,7 +5,22 @@
       <map>
         <entry key="OCD mech_deck_module">
           <value>
-            <ProfileState />
+            <ProfileState>
+              <option name="columnWidths">
+                <list>
+                  <option value="175" />
+                  <option value="112" />
+                  <option value="609" />
+                </list>
+              </option>
+              <option name="columnOrder">
+                <list>
+                  <option value="Name" />
+                  <option value="Value" />
+                  <option value="Description" />
+                </list>
+              </option>
+            </ProfileState>
           </value>
         </entry>
         <entry key="stserver">

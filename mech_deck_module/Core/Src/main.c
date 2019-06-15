@@ -28,7 +28,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "deck-module.hpp"
 #include <string.h>
 
 /* USER CODE END Includes */

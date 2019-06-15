@@ -129,13 +129,14 @@ void radioLoop(void) {
                    &buttonReport, &agcReport, &angle, &speedReport, &voltage, receivedSignature);
             if (strcmp(SENSOR_SIGNATURE, receivedSignature) == 0) {
                 if (agcReport == 0x80 || agcReport == 0) {
-                    state.windAngle = angle = -1;
+                    state.windAngle = -1;
+                    state.windAngleNonCorrected = -1;
                     state.anemState = DATA_ERROR;
                     if (radioDebug) printf("ANGLE_SENSOR_ERROR");
                 } else {
-                    angle = (angle + naviSettings.windAngleCorrection + 720) % 360;
+                    state.windAngleNonCorrected = angle;
+                    state.windAngle = (angle + naviSettings.windAngleCorrection) % 360;
                     state.anemState = OK;
-                    state.windAngle = angle;
                 }
                 state.windSpdMps = calcSpeed(speedReport);
             }

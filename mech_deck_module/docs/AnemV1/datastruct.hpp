@@ -20,7 +20,7 @@ class NavData: public NmeaReceiver
   		int gpsUpdateSpeedTicks;
   		int windUpdateTicks;
 	public:
-		NavData()//TODO reset values
+		NavData()
 		{
   			windSpeed = 10;
   			windAngle = 12;
