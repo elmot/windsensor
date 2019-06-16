@@ -27,9 +27,7 @@ void MainScreen::drawScreenData() {
             bigCharOutput(13, 25, 32);
         }
         bigCharOutput(direction, 20, 32);
-        bigCharOutput(angle / 100, 15, 80);
-        bigCharOutput((angle / 10) % 10, 20, 80);
-        bigCharOutput(angle % 10, 25, 80);
+        draw3digits(true, angle, 15, 80, - 1);
     }
 
     charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
@@ -84,5 +82,3 @@ void MainScreen::updatePicture() {
             break;
     }
 }
-
-

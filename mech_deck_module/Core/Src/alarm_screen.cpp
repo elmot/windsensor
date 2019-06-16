@@ -18,8 +18,8 @@ static const uint8_t CORRECT_ALARM_BACKGROUND[] = {
 
 void AlarmCorrectScreen::updatePicture() {
     Display::copyPict(CORRECT_ALARM_BACKGROUND);
-    draw3digits(localSettings.tooCloseAngle, 18, 71, position - LAST_STD_BUTTON - 1);
-    draw3digits(localSettings.tooFreeAngle, 18, 38, position - LAST_STD_BUTTON - 4);
+    draw3digits(false, localSettings.tooCloseAngle, 18, 71, position - LAST_STD_BUTTON - 1);
+    draw3digits(false, localSettings.tooFreeAngle, 18, 38, position - LAST_STD_BUTTON - 4);
 
     SettingsScreen::drawButtons();
 }
@@ -38,15 +38,5 @@ void AlarmCorrectScreen::gotoNextScreen() {
 
 int AlarmCorrectScreen::maxPosition() {
     return LAST_STD_BUTTON + 6;
-}
-
-void AlarmCorrectScreen::draw3digits(unsigned int val, unsigned int xBytes, unsigned int y, int activepos) const {
-    char char1 = val / 100;
-    char char2 = val / 10 % 10;
-    char char3 = val % 10;
-
-    charOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
-    charOutput(char2, xBytes + 4, y, activepos == 1 ? 0xFF : 0);
-    charOutput(char3, xBytes + 8, y, activepos == 2 ? 0xFF : 0);
 }
 

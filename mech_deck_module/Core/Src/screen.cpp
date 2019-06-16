@@ -381,3 +381,19 @@ void SettingsScreen::changeValue(int delta, unsigned int *changeableValue, unsig
     else
         while (*changeableValue < min) *changeableValue += max;
 }
+
+void Screen::draw3digits(bool big, unsigned int val, unsigned int xBytes, unsigned int y, int activepos) {
+    char char1 = val / 100;
+    char char2 = val / 10 % 10;
+    char char3 = val % 10;
+ if(big) {
+     bigCharOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
+     bigCharOutput(char2, xBytes + 5, y, activepos == 1 ? 0xFF : 0);
+     bigCharOutput(char3, xBytes + 10, y, activepos == 2 ? 0xFF : 0);
+ }
+ else {
+     charOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
+     charOutput(char2, xBytes + 4, y, activepos == 1 ? 0xFF : 0);
+     charOutput(char3, xBytes + 8, y, activepos == 2 ? 0xFF : 0);
+ }
+}

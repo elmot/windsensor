@@ -115,6 +115,8 @@ class Screen {
 protected:
     virtual void enter() {};
 
+    void static draw3digits(bool big, unsigned int val, unsigned int xBytes, unsigned int y, int activepos);
+
 public:
     static Screen *activeScreen;
 
@@ -211,7 +213,6 @@ protected:
 
     bool isChanged() override;
 
-    void draw3digits(unsigned int val, unsigned int xBytes, unsigned int y, int activepos) const;
 };
 
 extern AlarmCorrectScreen alarmCorrectScreen;
