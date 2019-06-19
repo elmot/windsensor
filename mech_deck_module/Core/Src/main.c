@@ -75,19 +75,6 @@ struct NaviState state = {
         .anemState = CONN_TIMEOUT,
         .gpsState = CONN_TIMEOUT,
         .windAngle = -1};
-
-const struct NaviSettings defaultSettings = {
-        .windAngleCorrection = 0,
-        .minWindMs = 1,
-        .tooCloseAngle = 33,
-        .tooFreeAngle = 170,
-        .windTpsToMs= {{1,   1},
-                       {30,  2},
-                       {100, 6},
-                       {300, 20}},
-        .CONSISTENCY_SIGN = CONSISTENCY_SIGN_VALUE
-};
-
 static inline bool checkTime(uint64_t started) {
     if (sysTicks() - started < 4) {
         if (state.anemState == CONN_FAIL) {
@@ -112,14 +99,6 @@ uint8_t nRF24_LL_RW(uint8_t data) {
     return LL_SPI_ReceiveData8(NRF_SPI);
 }
 
-const struct NaviSettings * naviSettings;
-void findSettings() {
-    if (flashSettings.CONSISTENCY_SIGN == CONSISTENCY_SIGN_VALUE) {
-        naviSettings = &flashSettings;
-    }  else {
-        naviSettings = &defaultSettings;
-    }
-}
 /* USER CODE END 0 */
 
 /**

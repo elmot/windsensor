@@ -3,7 +3,7 @@
 //
 
 #include <deck-module.hpp>
-#include <math.h>
+#include <cmath>
 
 bool AngleCorrectScreen::isChanged() {
     return localSettings.windAngleCorrection != naviSettings->windAngleCorrection;
@@ -31,7 +31,7 @@ void AngleCorrectScreen::changeValue(int delta) {
 }
 
 void AngleCorrectScreen::gotoNextScreen() {
-    nextScreen(&mainScreen);
+    nextScreen(&calibScreen);
 }
 
 int AngleCorrectScreen::maxPosition() {

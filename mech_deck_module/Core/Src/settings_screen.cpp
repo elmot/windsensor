@@ -3,7 +3,7 @@
 //
 
 #include <deck-module.hpp>
-#include <math.h>
+#include <cmath>
 
 void SettingsScreen::processKeyboard() {
     if ((state.keyOk & KEY_PRESS_E) && !(state.keyUp || state.keyDown || state.keyCancel)) {
@@ -53,13 +53,34 @@ void SettingsScreen::drawButtons() {
 }
 
 void SettingsScreen::save() {
+    uint32_t dstAddr = eraseDataFlash();
+
+    auto *srcAddr = (uint64_t *) &localSettings;
+    static const uint32_t endDstAddress = sizeof(struct NaviSettings) + dstAddr;
     HAL_FLASH_Unlock();
+    /* Program the user Flash area word by word
+      (area defined by FLASH_USER_START_ADDR and FLASH_USER_END_ADDR) ***********/
+    while (dstAddr < endDstAddress) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, dstAddr, *srcAddr) != HAL_OK) {
+            puts("Flash write error");
+        }
+        dstAddr += 8;
+        srcAddr++;
+    }
+    HAL_FLASH_Lock();
+
+    findSettings();
+    localSettings = *naviSettings;
+    if (position == SAVE_POSITION) position = CLOSE_POSITION;
+}
+
+uint32_t SettingsScreen::eraseDataFlash() {
     FLASH_EraseInitTypeDef eraseInit;
     uint32_t pageError;
 
     HAL_FLASH_Unlock();
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
-    auto dstAddr = (uint32_t) &flashSettings;
+    const auto dstAddr = (uint32_t) &flashSettings;
 
     /* Get the bank */
     if ((dstAddr) < (FLASH_BASE + FLASH_BANK_SIZE)) {
@@ -75,22 +96,6 @@ void SettingsScreen::save() {
     if (HAL_FLASHEx_Erase(&eraseInit, &pageError) != HAL_OK) {
         puts("Flash erase error");
     }
-
-    auto *srcAddr = (uint64_t *) &localSettings;
-    static const uint32_t endDstAddress = sizeof(struct NaviSettings) + dstAddr;
-
-    /* Program the user Flash area word by word
-      (area defined by FLASH_USER_START_ADDR and FLASH_USER_END_ADDR) ***********/
-    while (dstAddr < endDstAddress) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, dstAddr, *srcAddr) != HAL_OK) {
-            puts("Flash write error");
-        }
-        dstAddr += 8;
-        srcAddr++;
-    }
     HAL_FLASH_Lock();
-
-    findSettings();
-    localSettings = *naviSettings;
-    if (position == SAVE_POSITION) position = CLOSE_POSITION;
+    return dstAddr;
 }

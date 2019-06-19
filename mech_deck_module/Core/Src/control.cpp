@@ -86,10 +86,9 @@ nRF24_TXResult nRF24_TransmitPacket(const void *pBuf, uint8_t length) {
 
 void appendChecksumEol(char *nmea, int maxLen);
 
-static double calcSpeed(int speedReport);
+int calcTpm(int speedReport);
 
 void radioLoop(void) {
-
 
     // Some variables
     static uint32_t packets_lost = 0; // global counter of lost packets
@@ -138,7 +137,8 @@ void radioLoop(void) {
                     state.windAngle = (angle + naviSettings->windAngleCorrection) % 360;
                     state.anemState = OK;
                 }
-                state.windSpdMps = calcSpeed(speedReport);
+                state.windTics = calcTpm(speedReport);
+                state.windSpdMps = calcSpeed(state.windTable, state.windTics);
             }
             break;
         case nRF24_TX_TIMEOUT:
@@ -161,31 +161,33 @@ void radioLoop(void) {
     if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 }
 
-double calcSpeed(int speedReport) {
+double calcSpeed(const double windTable[][2], int ticksPerMin) {
     static const double DOUBLE_ZERO[] = {0, 0};
     const double *lowBound = DOUBLE_ZERO;
     const double *highBound;
     int idx = 0;
-    if (speedReport <= 0) {
-        return 0;
-    }
-    int tpm = 60 * 10000 / speedReport;
+    if (ticksPerMin < 0) return 0;
     for (; idx < WIND_TABLE_LEN; idx++) {
-        double v = naviSettings->windTpsToMs[idx][0];
+        double v = state.windTable[idx][0];
         if (v == 0) {
             idx--;
             break;
         }
-        if (v > tpm) break;
+        if (v > ticksPerMin) break;
     }
     if (idx < 0) return 0;
-    highBound = naviSettings->windTpsToMs[idx];
+    highBound = windTable[idx];
     if (idx > 0) {
-        lowBound = naviSettings->windTpsToMs[idx - 1];
+        lowBound = windTable[idx - 1];//todo fix
     }
 
-    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (tpm - lowBound[0]) / (highBound[0] - lowBound[0]);
+    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
     return speed < naviSettings->minWindMs ? 0 : speed;
+}
+
+int calcTpm(int speedReport) {
+    if(speedReport<=0) return -1;
+    return 60 * 10000 / speedReport;
 }
 
 void outputNmea() {

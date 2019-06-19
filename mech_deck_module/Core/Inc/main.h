@@ -78,6 +78,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void radioInit(void);
+
 void radioLoop(void);
 
 //delay in milliseconds
@@ -142,18 +143,24 @@ inline void msDelay(int delay) {
 #define KEY_DOWN_GPIO_Port GPIOB
 #define KEY_OK_Pin LL_GPIO_PIN_5
 #define KEY_OK_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 void initLcd(void);
+
 void findSettings(void);
 
 void splashLcd(void);
+
 void updateLcd(uint_fast64_t timestamp);
+
 void outputNmea(void);
 
 extern volatile uint_fast64_t _sysTicks;
+
 static inline void _sysTimerRoutine() {
     _sysTicks++;
 }
+
 static inline uint_fast64_t sysTicks() {
     __disable_irq();
     uint_fast64_t result = _sysTicks;
@@ -162,7 +169,8 @@ static inline uint_fast64_t sysTicks() {
 }
 
 void updateKeyboard(uint_fast64_t timeStamp);
-#define WIND_TABLE_LEN 5
+
+#define WIND_TABLE_LEN 7
 
 void mainLoop()__attribute__((noreturn));
 
@@ -181,17 +189,6 @@ enum LightsState {
 };
 
 #define CONSISTENCY_SIGN_VALUE 0xAA5533CC18819669ul
-struct NaviSettings {
-    unsigned int windAngleCorrection ;
-    double windTpsToMs [WIND_TABLE_LEN][2];
-    double minWindMs ;
-    int tooCloseAngle;
-    int tooFreeAngle;
-    unsigned long long CONSISTENCY_SIGN;
-};
-
-extern struct NaviSettings flashSettings; // defined in liker script in a flash page
-
 
 struct NaviState {
 //public:
@@ -216,6 +213,7 @@ struct NaviState {
     double speedK;
     double course;
 
+    int windTics;
     double windSpdMps;
     int windAngle;
     int windAngleNonCorrected;
@@ -224,15 +222,20 @@ struct NaviState {
     uint_fast64_t lastWindTS;
     uint_fast64_t lastScreenTS;
     bool waitUntilKeysReleased;
+
+    double windTable[WIND_TABLE_LEN][2];
 } ;
 
 extern struct NaviState state;
-extern const struct NaviSettings * naviSettings;
 
 
 enum DeviceState radioCheck();
+
 void processKeyboard();
 
+#define SCREEN_WIDTH 240
+#define SCREEN_WIDTH_BYTES (SCREEN_WIDTH / 8)
+#define SCREEN_HEIGHT 128
 
 /* USER CODE END Private defines */
 

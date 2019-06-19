@@ -3,7 +3,7 @@
 //
 
 #include <deck-module.hpp>
-#include <math.h>
+#include <cmath>
 
 AlarmCorrectScreen alarmCorrectScreen;
 

@@ -5,6 +5,7 @@
 #ifndef MECH_DECK_MODULE_HPP
 #define MECH_DECK_MODULE_HPP
 
+#include <string>
 #include "main.h"
 
 
@@ -19,6 +20,25 @@
 #define CHAR_CONN_FAIL 12
 #define CHAR_ANCHOR 13
 #define CHAR_NAVI 14
+
+class NaviSettings {
+
+public:
+    unsigned int windAngleCorrection = 0;
+    bool windLineEnabled[WIND_TABLE_LEN] = {true, true, true};
+    double windTpMtoMs[WIND_TABLE_LEN][2] = {{10,  1},
+                                             {100, 6},
+                                             {30,  4},
+                                             {300, 20}};
+    double minWindMs = 1;
+    int tooCloseAngle = 33;
+    int tooFreeAngle = 170;
+    unsigned long long CONSISTENCY_SIGN = CONSISTENCY_SIGN_VALUE;
+};
+
+extern const NaviSettings *naviSettings;
+extern const NaviSettings flashSettings;
+extern const NaviSettings defaultSettings;
 
 class Display {
 public:
@@ -40,6 +60,16 @@ public:
     virtual void pixel(float x, float y, int color);
 
     virtual void line(float x1, float y1, float x2, float y2, float width, const char *pattern);
+
+    static void savePictTo(uint8_t screen_buffer[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT]);
+
+    static void setMode(bool textEnabled);
+
+    static void clearText();
+
+    static void writeTextLine(std::string s, int x, int y);
+
+    static void setCursor(int x, int y);
 
 };
 
@@ -64,6 +94,8 @@ public:
     void translate(float tx, float ty);
 
     void rotate(float theta, float anchorx, float anchory);
+
+    void scale(float sx, float sy);
 
 private:
     float m00 = 0;
@@ -111,26 +143,34 @@ private:
     Display &screen;
 };
 
+extern AffineTransform affineScreen;
+extern MaskedDisplay maskedDisplay;
+
 class Screen {
 protected:
-    virtual void enter() {};
+
+    virtual void leave() {};
 
     void static draw3digits(bool big, unsigned int val, unsigned int xBytes, unsigned int y, int activepos);
 
 public:
     static Screen *activeScreen;
 
+    virtual void enter() {};
+
     virtual void updatePicture() = 0;
 
     virtual void processKeyboard() = 0;
 
     static void nextScreen(Screen *next) {
+        activeScreen->leave();
         activeScreen = next;
         activeScreen->enter();
         state.waitUntilKeysReleased = true;
     };
 
     static void invertBox(int xBytes, int y, int wBytes, int h);
+
     static void chessBox(int xBytes, int y, int wBytes, int h);
 
 };
@@ -145,7 +185,6 @@ public:
     void processKeyboard() override;
 
 };
-
 
 class SettingsScreen : public Screen {
 protected:
@@ -179,6 +218,10 @@ protected:
 
 protected:
     NaviSettings localSettings = *naviSettings;
+
+    static uint32_t eraseDataFlash();
+
+    static uint8_t bg_buffer[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
 };
 
 extern MainScreen mainScreen;
@@ -217,7 +260,65 @@ protected:
 
 extern AlarmCorrectScreen alarmCorrectScreen;
 
-extern AffineTransform affineScreen;
+class FactoryResetScreen : public SettingsScreen {
+public:
+    void updatePicture() override;
+
+protected:
+    void gotoNextScreen() override { nextScreen(&mainScreen); };
+
+    int maxPosition() override { return LAST_STD_BUTTON; };
+
+    void changeValue(int delta) override {};
+
+    bool isChanged() override { return true; };
+
+    void save() override {
+        SettingsScreen::eraseDataFlash();
+        HAL_NVIC_SystemReset();
+    }
+};
+
+extern FactoryResetScreen factoryResetScreen;
+
+class CalibScreen : public SettingsScreen {
+public:
+    void updatePicture() override;
+
+    void processKeyboard() override;
+
+protected:
+    uint8_t myBackground[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
+
+    void enter() override;
+
+    void leave() override;
+
+    void gotoNextScreen() override {
+        nextScreen(&mainScreen);
+    }
+
+    void changeValue(int delta) override;
+
+    int maxPosition() override;
+
+    bool isChanged() override;
+
+    Display calibDisplay = Display();
+    AffineTransform myAffineTransform = AffineTransform(calibDisplay);
+
+private:
+    double localWindTable[WIND_TABLE_LEN][2];
+    bool zoom = true;
+
+    void printCalibrations();
+
+    void prepareBackground();
+
+    int maxScreenWind() { return zoom ? 10 : 30; };
+};
+
+extern CalibScreen calibScreen;
 
 extern const uint8_t FONT[];
 extern const uint8_t FONT40x48[];
@@ -230,5 +331,8 @@ inline void bigCharOutput(int charCode, int xBytes, int yPos, bool invert = fals
     Display::copyPict(xBytes, yPos, 5, 48, invert ? 0xff : 0, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
+double calcSpeed(const double windTable[][2], int ticksPerMin);
+
+void normalizetWindTable(double dest[WIND_TABLE_LEN][2], const NaviSettings *actualSettings);
 
 #endif //MECH_DECK_MODULE_HPP

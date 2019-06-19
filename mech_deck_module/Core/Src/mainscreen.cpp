@@ -3,7 +3,7 @@
 //
 
 #include <deck-module.hpp>
-#include <math.h>
+#include <cmath>
 
 /* LCM commands */
 MainScreen mainScreen = MainScreen();
@@ -27,7 +27,7 @@ void MainScreen::drawScreenData() {
             bigCharOutput(13, 25, 32);
         }
         bigCharOutput(direction, 20, 32);
-        draw3digits(true, angle, 15, 80, - 1);
+        draw3digits(true, angle, 15, 80, -1);
     }
 
     charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
@@ -47,20 +47,23 @@ void MainScreen::drawScreenData() {
 }
 
 void MainScreen::processKeyboard() {
-    if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED)) {
+    if ((state.keyUp & KEY_L_PRESSED) && (state.keyDown & KEY_L_PRESSED) && !state.keyOk ) {
         nextScreen(&alarmCorrectScreen);
     }
-        if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
-            state.backLightPwm += 10;
-            if (state.backLightPwm > Display::BG_MAX) {
-                state.backLightPwm = Display::BG_MAX;
-            }
-        } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyUp == 0)) {
-            state.backLightPwm -= 10;
-            if (state.backLightPwm < Display::BG_MIN) {
-                state.backLightPwm = Display::BG_MIN;
-            }
+    if (state.keyUp & state.keyDown & state.keyOk & KEY_XL_PRESSED) {
+        nextScreen(&factoryResetScreen);
+    }
+    if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyDown == 0)) {
+        state.backLightPwm += 10;
+        if (state.backLightPwm > Display::BG_MAX) {
+            state.backLightPwm = Display::BG_MAX;
         }
+    } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && (state.keyUp == 0)) {
+        state.backLightPwm -= 10;
+        if (state.backLightPwm < Display::BG_MIN) {
+            state.backLightPwm = Display::BG_MIN;
+        }
+    }
     Display::bgBrightness(state.backLightPwm);
 }
 

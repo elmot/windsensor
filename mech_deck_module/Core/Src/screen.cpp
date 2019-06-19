@@ -3,11 +3,7 @@
 //
 
 #include <deck-module.hpp>
-#include <math.h>
-
-#define WIDTH 240
-#define WIDTH_BYTES (WIDTH / 8)
-#define HEIGHT 128
+#include <cmath>
 
 /* LCM commands */
 #define LCM_SET_TEXT_HOME 0x40
@@ -16,12 +12,14 @@
 #define LCM_SET_GRAPH_HOME 0x42
 #define LCM_SET_GRAPH_COLS 0x43
 
-MaskedDisplay maskedScreen = MaskedDisplay();
-AffineTransform affineScreen = AffineTransform(maskedScreen);
+#define MAX_LINE_POINTS 200
+
+MaskedDisplay maskedDisplay = MaskedDisplay();
+AffineTransform affineScreen = AffineTransform(maskedDisplay);
 
 AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
 
-Screen *Screen::activeScreen = &mainScreen;
+Screen *Screen::activeScreen = &calibScreen;
 
 static void writeCommand0(uint8_t command);
 
@@ -35,7 +33,8 @@ static void lcmClear();
 
 static void locateGraphZero();
 
-static uint8_t screen_buffer[WIDTH_BYTES * HEIGHT];
+
+static uint8_t screen_buffer[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
 
 static const uint8_t SPLASH_PICTURE[] = {
 #include "bitmaps/splash.txt"
@@ -54,25 +53,29 @@ void initLcd(void) {
     msDelay(50);
     LL_GPIO_SetOutputPin(DISP_RESET_GPIO_Port, DISP_RESET_Pin);
     msDelay(50);
-    writeCommand2(LCM_SET_TEXT_HOME, 0, 0x8);
-    writeCommand2(LCM_SET_TEXT_COLS, WIDTH_BYTES, 0);
+    writeCommand2(LCM_SET_TEXT_HOME, 0, 0x10);
+    writeCommand2(LCM_SET_TEXT_COLS, SCREEN_WIDTH_BYTES, 0);
     writeCommand2(LCM_SET_GRAPH_HOME, 0, 0);
-    writeCommand2(LCM_SET_GRAPH_COLS, WIDTH_BYTES, 0);
+    writeCommand2(LCM_SET_GRAPH_COLS, SCREEN_WIDTH_BYTES, 0);
     writeCommand0(0xa7);//cursor pattern 8 lines
     writeCommand0(0x80);//Internal GC rom mode, OR mode
     lcmClear();
-    writeCommand0(0x98);//text off, graphics on
+    Display::setMode(false);
     Display::bgBrightness(Display::BG_MIN);
 }
 
+void Display::setMode(bool textEnabled) {
+    writeCommand0(textEnabled ? 0x9F : 0x98);
+}
+
 void splashLcd(void) {
-    for (int i = 0; i < (2 * WIDTH_BYTES) + 1; i++) {
+    for (int i = 0; i < (2 * SCREEN_WIDTH_BYTES) + 1; i++) {
         Display::copyPict(SPLASH_PICTURE);
-        for (int j = 0; j < HEIGHT; j++) {
+        for (int j = 0; j < SCREEN_HEIGHT; j++) {
             int k = -j / 5 + i;
             if (k < 0) k = 0;
-            for (; k < WIDTH_BYTES; k++) {
-                screen_buffer[j * WIDTH_BYTES + k] = 0;
+            for (; k < SCREEN_WIDTH_BYTES; k++) {
+                screen_buffer[j * SCREEN_WIDTH_BYTES + k] = 0;
             }
         }
         Display::paint();
@@ -108,9 +111,9 @@ void locateGraphZero() {
 void Display::paint() {
     locateGraphZero();
     writeCommand0(0xb0);
-    for (int y = HEIGHT - 1; y >= 0; y--) {
-        for (int x = 0; x < WIDTH_BYTES; x++)
-            writeData(screen_buffer[y * WIDTH_BYTES + x]);
+    for (int y = SCREEN_HEIGHT - 1; y >= 0; y--) {
+        for (int x = 0; x < SCREEN_WIDTH_BYTES; x++)
+            writeData(screen_buffer[y * SCREEN_WIDTH_BYTES + x]);
     }
     writeCommand0(0xb2);
 }
@@ -194,11 +197,11 @@ void Display::bgBrightness(uint16_t brightness) {
 }
 
 void Display::copyPict(const uint8_t *background) {
-    memcpy(screen_buffer, background, WIDTH_BYTES * HEIGHT);
+    memcpy(screen_buffer, background, SCREEN_WIDTH_BYTES * SCREEN_HEIGHT);
 }
 
 void Display::clearPict() {
-    memset(screen_buffer, 0, HEIGHT * WIDTH_BYTES);
+    memset(screen_buffer, 0, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
 }
 
 void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict) {
@@ -208,7 +211,7 @@ void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict
 void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMask, const uint8_t *pict) {
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
-            screen_buffer[(y + iy) * WIDTH_BYTES + xBytes + ix] |= pict[iy * wBytes + ix] ^ xorMask;
+            screen_buffer[(y + iy) * SCREEN_WIDTH_BYTES + xBytes + ix] |= pict[iy * wBytes + ix] ^ xorMask;
         }
     }
 }
@@ -216,9 +219,9 @@ void Display::copyPict(int xBytes, int y, int wBytes, int h, const uint8_t xorMa
 void Screen::chessBox(int xBytes, int y, int wBytes, int h) {
     for (int iy = 0; iy < h; iy += 2) {
         for (int ix = 0; ix < wBytes; ix++) {
-            int idx = (y + iy) * WIDTH_BYTES + xBytes + ix;
+            int idx = (y + iy) * SCREEN_WIDTH_BYTES + xBytes + ix;
             screen_buffer[idx] |= 0x55;
-            screen_buffer[idx + WIDTH_BYTES] |= 0xAA;
+            screen_buffer[idx + SCREEN_WIDTH_BYTES] |= 0xAA;
         }
     }
 }
@@ -226,7 +229,7 @@ void Screen::chessBox(int xBytes, int y, int wBytes, int h) {
 void Screen::invertBox(int xBytes, int y, int wBytes, int h) {
     for (int iy = 0; iy < h; iy++) {
         for (int ix = 0; ix < wBytes; ix++) {
-            int idx = (y + iy) * WIDTH_BYTES + xBytes + ix;
+            int idx = (y + iy) * SCREEN_WIDTH_BYTES + xBytes + ix;
             screen_buffer[idx] = ~screen_buffer[idx];
         }
     }
@@ -235,9 +238,9 @@ void Screen::invertBox(int xBytes, int y, int wBytes, int h) {
 void Display::pixel(float fX, float fY, int color) {
     uint16_t x = lroundf(0.5F + fX);
     uint16_t y = lroundf(0.5F + fY);
-    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
+    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
     uint8_t mask = 0x80U >> (x & 7U);
-    uint8_t *addr = &screen_buffer[(x >> 3U) + (WIDTH_BYTES * y)];
+    uint8_t *addr = &screen_buffer[(x >> 3U) + (SCREEN_WIDTH_BYTES * y)];
     if (color) *addr |= mask; else *addr &= (uint8_t) ~mask;
 
 }
@@ -291,6 +294,11 @@ AffineTransform::AffineTransform(class Display &ascreen) : screen(ascreen) {
     reset();
 }
 
+void AffineTransform::scale(float sx, float sy) {
+    m00 *= sx;
+    m11 *= sy;
+}
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
@@ -323,7 +331,9 @@ void Display::line(float fX1, float fY1, float fX2, float fY2, float fWidth, con
     int inc = (x1 < x2) ? 1 : -1;
     int ystep = (y1 < y2) ? 1 : -1;
     const char *patternChar = pattern;
-    for (int x = x1; (x2 - x) * inc >= 0; x += inc) {
+
+    int pointCount = MAX_LINE_POINTS;
+    for (int x = x1; ((x2 - x) * inc >= 0) &&(pointCount); x += inc,pointCount--) {
 
         if (*patternChar == 0) {
             patternChar = pattern;
@@ -339,6 +349,35 @@ void Display::line(float fX1, float fY1, float fX2, float fY2, float fWidth, con
             err += deltax;
         }
     }
+}
+
+void Display::savePictTo(uint8_t saveScreenBuffer[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT]) {
+    memcpy(saveScreenBuffer, screen_buffer, sizeof(screen_buffer));
+}
+
+void Display::clearText() {
+    writeCommand2(0x24, 0, 0x10);
+    writeCommand0(0xb0);
+    for (int i = 0; i < SCREEN_WIDTH_BYTES * SCREEN_HEIGHT / 8; i++) {
+        writeData(0);
+    }
+    writeCommand0(0xb2);
+
+}
+
+void Display::writeTextLine(std::string s, int x, int y) {
+    int textAddress = y * 30 + x;
+    writeCommand2(0x24, textAddress % 256, 0x10 + textAddress / 256);
+    writeCommand0(0xb0);
+    for (int i =0; s[i] != 0; i++) {
+        writeData(s[i] - 0x20);
+    }
+    writeCommand0(0xb2);
+
+}
+
+void Display::setCursor(int x, int y) {
+    writeCommand2(0x21, x, y);
 }
 
 void MaskedDisplay::pixel(float x, float y, int color) {
@@ -386,14 +425,13 @@ void Screen::draw3digits(bool big, unsigned int val, unsigned int xBytes, unsign
     char char1 = val / 100;
     char char2 = val / 10 % 10;
     char char3 = val % 10;
- if(big) {
-     bigCharOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
-     bigCharOutput(char2, xBytes + 5, y, activepos == 1 ? 0xFF : 0);
-     bigCharOutput(char3, xBytes + 10, y, activepos == 2 ? 0xFF : 0);
- }
- else {
-     charOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
-     charOutput(char2, xBytes + 4, y, activepos == 1 ? 0xFF : 0);
-     charOutput(char3, xBytes + 8, y, activepos == 2 ? 0xFF : 0);
- }
+    if (big) {
+        bigCharOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
+        bigCharOutput(char2, xBytes + 5, y, activepos == 1 ? 0xFF : 0);
+        bigCharOutput(char3, xBytes + 10, y, activepos == 2 ? 0xFF : 0);
+    } else {
+        charOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
+        charOutput(char2, xBytes + 4, y, activepos == 1 ? 0xFF : 0);
+        charOutput(char3, xBytes + 8, y, activepos == 2 ? 0xFF : 0);
+    }
 }
