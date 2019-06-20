@@ -6,7 +6,7 @@
 #include <cmath>
 
 void SettingsScreen::processKeyboard() {
-    if ((state.keyOk & KEY_PRESS_E) && !(state.keyUp || state.keyDown || state.keyCancel)) {
+    if ((state.keyOk & (KEY_PRESS_E | KEY_REPEAT_E)) && !(state.keyUp || state.keyDown || state.keyCancel)) {
         switch (position) {
             case SAVE_POSITION:
                 save();
@@ -20,12 +20,12 @@ void SettingsScreen::processKeyboard() {
             default:
                 changeValue(1);
         }
-    } else if ((state.keyDown & KEY_PRESS_E) && !(state.keyOk || state.keyUp || state.keyCancel)) {
+    } else if ((state.keyDown & (KEY_PRESS_E | KEY_REPEAT_E)) && !(state.keyOk || state.keyUp || state.keyCancel)) {
         position = (position + 1) % (maxPosition() + 1);
         if (!isChanged() && (position == SAVE_POSITION)) {
             position = CLOSE_POSITION;
         }
-    } else if ((state.keyUp & KEY_PRESS_E) && !(state.keyOk || state.keyDown || state.keyCancel)) {
+    } else if ((state.keyUp & (KEY_PRESS_E | KEY_REPEAT_E)) && !(state.keyOk || state.keyDown || state.keyCancel)) {
         position = (position + maxPosition()) % (maxPosition() + 1);
         if (!isChanged() && (position == SAVE_POSITION)) {
             position = maxPosition();

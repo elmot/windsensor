@@ -208,13 +208,13 @@ struct NaviState {
      */
     int8_t backLightPwm;
 
-    double lat;
-    double lon;
-    double speedK;
-    double course;
+    float lat;
+    float lon;
+    float speedK;
+    float course;
 
     int windTics;
-    double windSpdMps;
+    float windSpdMps;
     int windAngle;
     int windAngleNonCorrected;
 
@@ -223,7 +223,7 @@ struct NaviState {
     uint_fast64_t lastScreenTS;
     bool waitUntilKeysReleased;
 
-    double windTable[WIND_TABLE_LEN][2];
+    float windTable[WIND_TABLE_LEN][2];
 } ;
 
 extern struct NaviState state;

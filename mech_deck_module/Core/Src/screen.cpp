@@ -19,7 +19,7 @@ AffineTransform affineScreen = AffineTransform(maskedDisplay);
 
 AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
 
-Screen *Screen::activeScreen = &calibScreen;
+Screen *Screen::activeScreen = &mainScreen;
 
 static void writeCommand0(uint8_t command);
 

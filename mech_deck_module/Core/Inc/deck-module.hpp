@@ -26,11 +26,11 @@ class NaviSettings {
 public:
     unsigned int windAngleCorrection = 0;
     bool windLineEnabled[WIND_TABLE_LEN] = {true, true, true};
-    double windTpMtoMs[WIND_TABLE_LEN][2] = {{10,  1},
+    float windTpMtoMs[WIND_TABLE_LEN][2] = {{10,  1},
                                              {100, 6},
                                              {30,  4},
                                              {300, 20}};
-    double minWindMs = 1;
+    float minWindMs = 1;
     int tooCloseAngle = 33;
     int tooFreeAngle = 170;
     unsigned long long CONSISTENCY_SIGN = CONSISTENCY_SIGN_VALUE;
@@ -285,8 +285,6 @@ class CalibScreen : public SettingsScreen {
 public:
     void updatePicture() override;
 
-    void processKeyboard() override;
-
 protected:
     uint8_t myBackground[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
 
@@ -308,8 +306,8 @@ protected:
     AffineTransform myAffineTransform = AffineTransform(calibDisplay);
 
 private:
-    double localWindTable[WIND_TABLE_LEN][2];
-    bool zoom = true;
+    float localWindTable[WIND_TABLE_LEN][2];
+    bool zoom = false;
 
     void printCalibrations();
 
@@ -331,8 +329,8 @@ inline void bigCharOutput(int charCode, int xBytes, int yPos, bool invert = fals
     Display::copyPict(xBytes, yPos, 5, 48, invert ? 0xff : 0, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
-double calcSpeed(const double windTable[][2], int ticksPerMin);
+float calcSpeed(const float windTable[][2], int ticksPerMin);
 
-void normalizetWindTable(double dest[WIND_TABLE_LEN][2], const NaviSettings *actualSettings);
+void normalizetWindTable(float dest[WIND_TABLE_LEN][2], const NaviSettings *actualSettings);
 
 #endif //MECH_DECK_MODULE_HPP

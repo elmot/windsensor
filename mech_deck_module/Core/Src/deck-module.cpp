@@ -8,14 +8,14 @@ const NaviSettings defaultSettings;
 const NaviSettings *naviSettings;
 
 /* qsort int comparison function */
-int double_array_head_cmp(const void *a, const void *b) {
-    const auto da = (const double *) a; // casting pointer types
-    const auto db = (const double *) b;
+int float_array_head_cmp(const void *a, const void *b) {
+    const auto da = (const float *) a; // casting pointer types
+    const auto db = (const float *) b;
     return __signbitd(db[0] - da[0]);
 }
 
 
-void normalizetWindTable(double (*dest)[2], const NaviSettings *actualSettings) {
+void normalizetWindTable(float (*dest)[2], const NaviSettings *actualSettings) {
     int n = 0;
     for (int i = 0; i < WIND_TABLE_LEN; i++) {
         if (!actualSettings->windLineEnabled[i]) continue;
@@ -28,7 +28,7 @@ void normalizetWindTable(double (*dest)[2], const NaviSettings *actualSettings) 
         dest[n][1] = actualSettings->windTpMtoMs[i][1];
         n++;
     }
-    qsort(dest, n, sizeof(double) * 2, &double_array_head_cmp);
+    qsort(dest, n, sizeof(float) * 2, &float_array_head_cmp);
     for (; n < WIND_TABLE_LEN; n++) {
         dest[n][0] = 0;
     }
@@ -61,7 +61,7 @@ void mainLoop() {
     radioInit();
     Display::bgBrightness(state.backLightPwm);
     Screen::activeScreen->enter();
-//    splashLcd();//todo enable back
+    splashLcd();
 
     /* USER CODE END 2 */
 

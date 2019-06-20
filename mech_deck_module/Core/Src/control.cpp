@@ -134,7 +134,7 @@ void radioLoop(void) {
                     if (radioDebug) printf("ANGLE_SENSOR_ERROR");
                 } else {
                     state.windAngleNonCorrected = angle;
-                    state.windAngle = (angle + naviSettings->windAngleCorrection) % 360;
+                    state.windAngle = (angle + (int)naviSettings->windAngleCorrection) % 360;
                     state.anemState = OK;
                 }
                 state.windTics = calcTpm(speedReport);
@@ -161,27 +161,27 @@ void radioLoop(void) {
     if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 }
 
-double calcSpeed(const double windTable[][2], int ticksPerMin) {
-    static const double DOUBLE_ZERO[] = {0, 0};
-    const double *lowBound = DOUBLE_ZERO;
-    const double *highBound;
+float calcSpeed(const float windTable[][2], int ticksPerMin) {
+    static const float DOUBLE_ZERO[] = {0, 0};
+    const float *lowBound = DOUBLE_ZERO;
+    const float *highBound;
     int idx = 0;
     if (ticksPerMin < 0) return 0;
     for (; idx < WIND_TABLE_LEN; idx++) {
-        double v = state.windTable[idx][0];
+        float v = state.windTable[idx][0];
         if (v == 0) {
             idx--;
             break;
         }
-        if (v > ticksPerMin) break;
+        if (v > (float)ticksPerMin) break;
     }
     if (idx < 0) return 0;
     highBound = windTable[idx];
+    float speed;
     if (idx > 0) {
-        lowBound = windTable[idx - 1];//todo fix
+        lowBound = windTable[idx - 1];
     }
-
-    double speed = lowBound[1] + (highBound[1] - lowBound[1]) * (ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
+    speed = lowBound[1] + (highBound[1] - lowBound[1]) * ((float)ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
     return speed < naviSettings->minWindMs ? 0 : speed;
 }
 
@@ -206,8 +206,8 @@ void outputNmea() {
             lr = "R";
             nmeaAngle = state.windAngle;
         }
-        double windSpeedKph = state.windSpdMps * 3.6;
-        double windSpeedKn = windSpeedKph / 1.852;
+        float windSpeedKph = state.windSpdMps * 3.6f;
+        float windSpeedKn = windSpeedKph / 1.852f;
         snprintf(nmea, sizeof(nmea), "$WIVWR,%d.0,%s,%f,N,%f,M,%f,K", nmeaAngle, lr,
                  windSpeedKn, state.windSpdMps, windSpeedKph);
     }
