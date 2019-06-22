@@ -14,6 +14,8 @@ CalibScreen calibScreen;
 static char strBuf[SCREEN_WIDTH_BYTES + 1];
 
 //todo help screen?
+//todo fix reboot
+//todo nmea retranslator
 
 void CalibScreen::updatePicture() {
     Display::copyPict(myBackground);

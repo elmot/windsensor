@@ -32,9 +32,6 @@ void MainScreen::drawScreenData() {
 
     charOutput(((int) state.windSpdMps / 10) % 10, 17, 0);
     charOutput((int) state.windSpdMps % 10, 21, 0);
-    if (state.backLightPwm != Display::BG_MIN) {
-        charOutput(CHAR_BACK_LIGHT, 0, 0);
-    }
     switch (state.lights) {
         case ANCHOR:
             charOutput(CHAR_ANCHOR, 6, 38);
@@ -83,5 +80,8 @@ void MainScreen::updatePicture() {
         default:
             charOutput(CHAR_CONN_FAIL, 6, 38);
             break;
+    }
+    if (state.backLightPwm != Display::BG_MIN) {
+        charOutput(CHAR_BACK_LIGHT, 0, 0);
     }
 }

@@ -7,11 +7,7 @@
 
 uint8_t nRF24_payload[33];
 
-bool radioDebug = true;
-
-void Toggle_LED() {
-    LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-}
+static const bool radioDebug = true;
 
 // Length of received payload
 uint8_t payload_length;
@@ -97,6 +93,12 @@ void radioLoop(void) {
     static uint8_t otx_arc_cnt; // retransmit count
     char button;
 
+    static uint_fast64_t nextDiag = 0;
+    bool doDebug = false;
+    if (nextDiag < sysTicks()) {
+        doDebug = true;
+        nextDiag = sysTicks() + 200;
+    }
 
     switch (state.lights) {
         case ANCHOR:
@@ -108,7 +110,9 @@ void radioLoop(void) {
         default:
             button = '1';
     }
-    if (radioDebug) printf("$ELMOT,PAYLOAD:>%c<TX:,", button);
+    if (doDebug) {
+        printf("$ELMOT,PAYLOAD:>%c<TX:,", button);
+    }
 
     // Transmit a packet
     char buffer[30] = "B?;";
@@ -131,10 +135,10 @@ void radioLoop(void) {
                     state.windAngle = -1;
                     state.windAngleNonCorrected = -1;
                     state.anemState = DATA_ERROR;
-                    if (radioDebug) printf("ANGLE_SENSOR_ERROR");
+                    if (doDebug) printf("ANGLE_SENSOR_ERROR");
                 } else {
                     state.windAngleNonCorrected = angle;
-                    state.windAngle = (angle + (int)naviSettings->windAngleCorrection) % 360;
+                    state.windAngle = (angle + (int) naviSettings->windAngleCorrection) % 360;
                     state.anemState = OK;
                 }
                 state.windTics = calcTpm(speedReport);
@@ -143,22 +147,22 @@ void radioLoop(void) {
             break;
         case nRF24_TX_TIMEOUT:
             state.anemState = CONN_FAIL;
-            if (radioDebug) printf("TIMEOUT");
+            if (doDebug) printf("TIMEOUT");
             break;
         case nRF24_TX_MAXRT:
             state.anemState = CONN_FAIL;
-            if (radioDebug) printf("MAX RETRANSMIT");
+            if (doDebug) printf("MAX RETRANSMIT");
             packets_lost += otx_plos_cnt;
             nRF24_ResetPLOS();
             break;
         default:
             state.anemState = CONN_FAIL;
-            if (radioDebug) printf("ERROR");
+            if (doDebug) printf("ERROR");
             break;
     }
     nRF24_payload[payload_length] = 0;
 
-    if (radioDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+    if (doDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 }
 
 float calcSpeed(const float windTable[][2], int ticksPerMin) {
@@ -173,7 +177,7 @@ float calcSpeed(const float windTable[][2], int ticksPerMin) {
             idx--;
             break;
         }
-        if (v > (float)ticksPerMin) break;
+        if (v > (float) ticksPerMin) break;
     }
     if (idx < 0) return 0;
     highBound = windTable[idx];
@@ -181,20 +185,22 @@ float calcSpeed(const float windTable[][2], int ticksPerMin) {
     if (idx > 0) {
         lowBound = windTable[idx - 1];
     }
-    speed = lowBound[1] + (highBound[1] - lowBound[1]) * ((float)ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
+    speed = lowBound[1] +
+            (highBound[1] - lowBound[1]) * ((float) ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
     return speed < naviSettings->minWindMs ? 0 : speed;
 }
 
 int calcTpm(int speedReport) {
-    if(speedReport<=0) return -1;
+    if (speedReport <= 0) return -1;
     return 60 * 10000 / speedReport;
 }
 
 void outputNmea() {
     const char *lr;
     static char nmea[150];
-    //todo delay
-
+    static uint_fast64_t nextNmea = 0;
+    if (nextNmea > sysTicks()) return;
+    nextNmea = sysTicks() + 100;
     if (state.windAngle < 0) {
         strcpy(nmea, "$WIVWR,,,,N,,M,,K");
     } else {
@@ -212,7 +218,7 @@ void outputNmea() {
                  windSpeedKn, state.windSpdMps, windSpeedKph);
     }
     appendChecksumEol(nmea, sizeof(nmea));
-    if (radioDebug) printf(nmea);
+    fwrite(nmea,1, strlen(nmea),stdout);
 }
 
 void appendChecksumEol(char *nmea, int maxLen) {
@@ -280,6 +286,8 @@ void radioInit() {// Initialize the nRF24L01 to its default state
     nRF24_SetPowerMode(nRF24_PWR_UP);
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCSimplifyInspection"
 DeviceState radioCheck() {
     if (radioDebug) printf("\r\nSTM32L432KC is online.\r\n");
     msDelay(100);
@@ -297,3 +305,4 @@ DeviceState radioCheck() {
     state.anemState = DATA_NO_FIX;
     return state.anemState;
 }
+#pragma clang diagnostic pop
