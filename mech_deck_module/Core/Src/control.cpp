@@ -111,7 +111,7 @@ void radioLoop(void) {
             button = '1';
     }
     if (doDebug) {
-        printf("$ELMOT,PAYLOAD:>%c<TX:,", button);
+        printf("$ELMOT,PL:>%c<TX:,", button);
     }
 
     // Transmit a packet
@@ -162,7 +162,7 @@ void radioLoop(void) {
     }
     nRF24_payload[payload_length] = 0;
 
-    if (doDebug) printf(",ACK_PAYLOAD=>%s<,ARC=%d,LOST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
+    if (doDebug) printf(",ACK_PL=>%s<,ARC=%d,LST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 }
 
 float calcSpeed(const float windTable[][2], int ticksPerMin) {
