@@ -163,10 +163,10 @@ String.100.0=STM8S105C6
 
 [Root.Config.1.Settings.3]
 String.2.0=Compiling $(InputFile)...
-String.3.0=cxstm8 +mods0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.3.0=cxstm8 +modsl0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
 String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
 String.5.0=$(IntermPath)$(InputName).ls
-String.6.0=2021,4,26,23,54,15
+String.6.0=2021,4,27,14,26,40
 
 [Root.Config.1.Settings.4]
 String.2.0=Assembling $(InputFile)...
@@ -271,10 +271,10 @@ Int.1=0
 
 [Root.SPL.Config.1.Settings.1]
 String.2.0=Compiling $(InputFile)...
-String.3.0=cxstm8 +mods0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.3.0=cxstm8 +modsl0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
 String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
 String.5.0=$(IntermPath)$(InputName).ls
-String.6.0=2021,4,26,23,54,15
+String.6.0=2021,4,27,14,26,40
 
 [Root.SPL.Config.1.Settings.2]
 String.2.0=Assembling $(InputFile)...
@@ -369,10 +369,10 @@ Int.1=0
 
 [Root.Source Files.Config.1.Settings.1]
 String.2.0=Compiling $(InputFile)...
-String.3.0=cxstm8 +mods0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.3.0=cxstm8 +modsl0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
 String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
 String.5.0=$(IntermPath)$(InputName).ls
-String.6.0=2021,4,26,23,54,15
+String.6.0=2021,4,27,14,26,40
 
 [Root.Source Files.Config.1.Settings.2]
 String.2.0=Assembling $(InputFile)...
@@ -461,10 +461,10 @@ Int.1=0
 
 [Root.Include Files.Config.1.Settings.1]
 String.2.0=Compiling $(InputFile)...
-String.3.0=cxstm8 +mods0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.3.0=cxstm8 +modsl0 -dSTM8S105 -i..\stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\inc $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
 String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
 String.5.0=$(IntermPath)$(InputName).ls
-String.6.0=2021,4,26,23,54,15
+String.6.0=2021,4,27,14,26,40
 
 [Root.Include Files.Config.1.Settings.2]
 String.2.0=Assembling $(InputFile)...

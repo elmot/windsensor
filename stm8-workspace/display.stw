@@ -8,7 +8,7 @@ Filename=erm240128-2\erm240128-2.stp
 Dependencies=
 [Options]
 ActiveProject=erm240128-2
-ActiveConfig=Debug
+ActiveConfig=Release
 AddSortedElements=1
 [.St7McuIcdConf]
 McuName=STM8S105C6

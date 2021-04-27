@@ -2,6 +2,7 @@
 *.wdb
 *.pdb
 *.spy
+*.dep
 TAGS.txt
 TAGS_FileList.txt
 test003/
