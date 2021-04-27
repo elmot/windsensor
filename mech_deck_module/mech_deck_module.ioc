@@ -2,7 +2,7 @@
 File.Version=6
 GPIO.groupedBy=Group By Peripherals
 IWDG.IPParameters=Prescaler
-IWDG.Prescaler=IWDG_PRESCALER_16
+IWDG.Prescaler=IWDG_PRESCALER_64
 KeepUserPlacement=false
 Mcu.Family=STM32L4
 Mcu.IP0=IWDG
