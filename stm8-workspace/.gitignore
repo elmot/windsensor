@@ -1,0 +1,9 @@
+*.wed
+*.wdb
+*.pdb
+*.spy
+TAGS.txt
+TAGS_FileList.txt
+test003/
+Debug/
+Release/

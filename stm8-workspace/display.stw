@@ -1,0 +1,14 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=erm240128-2\erm240128-2.stp
+Dependencies=
+[Options]
+ActiveProject=erm240128-2
+ActiveConfig=Debug
+AddSortedElements=1
+[.St7McuIcdConf]
+McuName=STM8S105C6

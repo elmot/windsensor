@@ -94,12 +94,26 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
+    for (uint8_t i = 0; 1; i = (i + 17) % 99) {
+        static uint8_t cmd[3] = {0xAA, 0xA0, 0};
+        cmd[2] = i;
+        HAL_UART_Transmit(&huart4, cmd, 3, 3);
+        static uint8_t pattern[12] = {0xFF, 0x00, 0xA0,0xA4,0xA0,0xA4, 0xCC, 0xCC,0xF7,3,0xAA,0xA9};
+        for(int j = 0; j < 128*3 /2 ;j++)
+            HAL_UART_Transmit(&huart4, pattern, 10, 10);
+        HAL_Delay(750);
+        HAL_UART_Transmit(&huart4, cmd, 3, 3);
+        for(int j = 0; j < 128*6;j++)
+            HAL_UART_Transmit(&huart4, pattern+6,6 , 10);
 
-    /* USER CODE BEGIN 3 */
-  }
+        HAL_Delay(750);
+        /* USER CODE END WHILE */
+
+        /* USER CODE BEGIN 3 */
+    }
+#pragma clang diagnostic pop
   /* USER CODE END 3 */
 }
 
