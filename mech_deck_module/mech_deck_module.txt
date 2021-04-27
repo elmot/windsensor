@@ -1,0 +1,116 @@
+Configuration	mech_deck_module
+STM32CubeMX 	6.2.1
+Date	04/27/2021
+MCU	STM32L476RGTx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SPI2	Full-Duplex Master	SPI2_MISO	PB14
+SPI2	Full-Duplex Master	SPI2_MOSI	PB15
+SPI2	Full-Duplex Master	SPI2_SCK	PB13
+SYS	Serial Wire	SYS_JTCK-SWCLK	PA14 (JTCK-SWCLK)
+SYS	Serial Wire	SYS_JTMS-SWDIO	PA13 (JTMS-SWDIO)
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+UART4	Asynchronous	UART4_RX	PC11
+UART4	Asynchronous	UART4_TX	PC10
+USART1	Asynchronous	USART1_RX	PB7
+USART1	Asynchronous	USART1_TX	PB6
+USART2	Asynchronous	USART2_RX	PA3
+USART2	Asynchronous	USART2_TX	PA2
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PC13	GPIO_EXTI13	B1 [Blue PushButton]
+8	PC0	GPIO_Input	
+9	PC1	GPIO_Input	
+14	PA0	GPIO_Input	KEY_L_NAVI
+15	PA1	GPIO_Input	KEY_L_ANCHOR
+16	PA2	USART2_TX	USART_TX
+17	PA3	USART2_RX	USART_RX
+21	PA5	GPIO_Output	LD2 [green Led]
+29	PB10	GPIO_EXTI10	
+30	PB11	GPIO_Output	
+33	PB12	GPIO_Output	
+34	PB13	SPI2_SCK	
+35	PB14	SPI2_MISO	
+36	PB15	SPI2_MOSI	
+46	PA13 (JTMS-SWDIO)	SYS_JTMS-SWDIO	TMS
+49	PA14 (JTCK-SWCLK)	SYS_JTCK-SWCLK	TCK
+51	PC10	UART4_TX	
+52	PC11	UART4_RX	
+54	PD2	GPIO_Input	KEY_CANCEL
+55	PB3 (JTDO-TRACESWO)	GPIO_Input	KEY_UP
+56	PB4 (NJTRST)	GPIO_Input	KEY_DOWN
+57	PB5	GPIO_Input	KEY_OK
+58	PB6	USART1_TX	
+59	PB7	USART1_RX	
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SPI2	Full-Duplex Master	SPI2_MISO	PB14
+SPI2	Full-Duplex Master	SPI2_MOSI	PB15
+SPI2	Full-Duplex Master	SPI2_SCK	PB13
+SYS	Serial Wire	SYS_JTCK-SWCLK	PA14 (JTCK-SWCLK)
+SYS	Serial Wire	SYS_JTMS-SWDIO	PA13 (JTMS-SWDIO)
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+UART4	Asynchronous	UART4_RX	PC11
+UART4	Asynchronous	UART4_TX	PC10
+USART1	Asynchronous	USART1_RX	PB7
+USART1	Asynchronous	USART1_TX	PB6
+USART2	Asynchronous	USART2_RX	PA3
+USART2	Asynchronous	USART2_TX	PA2
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PC13	GPIO_EXTI13	B1 [Blue PushButton]
+8	PC0	GPIO_Input	
+9	PC1	GPIO_Input	
+14	PA0	GPIO_Input	KEY_L_NAVI
+15	PA1	GPIO_Input	KEY_L_ANCHOR
+16	PA2	USART2_TX	USART_TX
+17	PA3	USART2_RX	USART_RX
+21	PA5	GPIO_Output	LD2 [green Led]
+29	PB10	GPIO_EXTI10	
+30	PB11	GPIO_Output	
+33	PB12	GPIO_Output	
+34	PB13	SPI2_SCK	
+35	PB14	SPI2_MISO	
+36	PB15	SPI2_MOSI	
+46	PA13 (JTMS-SWDIO)	SYS_JTMS-SWDIO	TMS
+49	PA14 (JTCK-SWCLK)	SYS_JTCK-SWCLK	TCK
+51	PC10	UART4_TX	
+52	PC11	UART4_RX	
+54	PD2	GPIO_Input	KEY_CANCEL
+55	PB3 (JTDO-TRACESWO)	GPIO_Input	KEY_UP
+56	PB4 (NJTRST)	GPIO_Input	KEY_DOWN
+57	PB5	GPIO_Input	KEY_OK
+58	PB6	USART1_TX	
+59	PB7	USART1_RX	
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : mech_deck_module
+Project Folder : D:\projects\windsensor\mech_deck_module
+Toolchain / IDE : STM32CubeIDE
+Firmware Package Name and Version : STM32Cube FW_L4 V1.17.0
+
+
+Code Generation Settings : 
+STM32Cube MCU packages and embedded software packs : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : Yes
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : Yes
+
+
+Toolchains Settings : 
+Compiler Optimizations : 
+
+
+
+
+
