@@ -29,6 +29,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 
+#include "stm32l4xx_ll_iwdg.h"
 #include "stm32l4xx_ll_crs.h"
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_bus.h"
@@ -100,6 +101,12 @@ inline void msDelay(int delay) {
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin LL_GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define NRF_IRQ_Pin LL_GPIO_PIN_10
+#define NRF_IRQ_GPIO_Port GPIOB
+#define NRF_CE_Pin LL_GPIO_PIN_11
+#define NRF_CE_GPIO_Port GPIOB
+#define NRF_CSN_Pin LL_GPIO_PIN_12
+#define NRF_CSN_GPIO_Port GPIOB
 #define TMS_Pin LL_GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin LL_GPIO_PIN_14
