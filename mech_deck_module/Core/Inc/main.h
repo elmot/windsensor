@@ -144,7 +144,6 @@ static inline uint_fast64_t sysTicks() {
 
 void updateKeyboard(uint_fast64_t timeStamp);
 
-#define WIND_TABLE_LEN 7
 
 void mainLoop()__attribute__((noreturn));
 
@@ -197,7 +196,8 @@ struct NaviState {
     uint_fast64_t lastScreenTS;
     bool waitUntilKeysReleased;
 
-    float windTable[WIND_TABLE_LEN][2];
+    float fixedWindMs;
+    int fixedTics;
 } ;
 
 extern struct NaviState state;

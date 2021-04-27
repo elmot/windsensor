@@ -31,10 +31,11 @@ void AngleCorrectScreen::changeValue(int delta) {
 }
 
 void AngleCorrectScreen::gotoNextScreen() {
-    nextScreen(&calibScreen);
+    nextScreen(&speedCorrectScreen);
 }
 
 int AngleCorrectScreen::maxPosition() {
     return LAST_STD_BUTTON + 3;
 }
 
+AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();

@@ -24,11 +24,8 @@ class NaviSettings {
 
 public:
     unsigned int windAngleCorrection = 0;
-    bool windLineEnabled[WIND_TABLE_LEN] = {true, true, true};
-    float windTpMtoMs[WIND_TABLE_LEN][2] = {{10,  1},
-                                             {100, 6},
-                                             {30,  4},
-                                             {300, 20}};
+    unsigned int fixedWindMs = 3;
+    int fixedTics = 140;
     float minWindMs = 1;
     int tooCloseAngle = 33;
     int tooFreeAngle = 170;
@@ -54,7 +51,7 @@ public:
     void static copyPict(int xBytes, int y, int wBytes, int h, const uint8_t *pict);
 
     static const uint16_t BG_MAX = 99;
-    static const uint16_t BG_MIN = 0;
+    static constexpr uint16_t BG_MIN = 0;
 
     virtual void pixel(float x, float y, int color);
 
@@ -275,56 +272,36 @@ protected:
 
 extern FactoryResetScreen factoryResetScreen;
 
-class CalibScreen : public SettingsScreen {
+class SpeedCorrectScreen : public SettingsScreen {
 public:
     void updatePicture() override;
 
 protected:
-    uint8_t myBackground[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
-
-    void enter() override;
-
-    void leave() override;
-
-    void gotoNextScreen() override {
-        nextScreen(&mainScreen);
-    }
-
-    void changeValue(int delta) override;
+    void gotoNextScreen() override;
 
     int maxPosition() override;
 
+    void changeValue(int delta) override;
+
     bool isChanged() override;
 
-    Display calibDisplay = Display();
-    AffineTransform myAffineTransform = AffineTransform(calibDisplay);
-
-private:
-    float localWindTable[WIND_TABLE_LEN][2];
-    bool zoom = false;
-
-    void printCalibrations();
-
-    void prepareBackground();
-
-    int maxScreenWind() { return zoom ? 10 : 30; };
+    void save() override;
 };
 
-extern CalibScreen calibScreen;
+extern SpeedCorrectScreen speedCorrectScreen;
+
 
 extern const uint8_t FONT[];
 extern const uint8_t FONT40x48[];
 
-inline void charOutput(int charCode, int xBytes, int yPos, uint8_t xorMask = 0) {
+inline void charOutput(int charCode, unsigned int xBytes,unsigned  int yPos, uint8_t xorMask = 0) {
     Display::copyPict(xBytes, yPos, 4, 32, xorMask, &FONT[32 * 4 * (14 - charCode)]);
 }
 
-inline void bigCharOutput(int charCode, int xBytes, int yPos, bool invert = false) {
+inline void bigCharOutput(int charCode,unsigned int xBytes,unsigned  int yPos, bool invert = false) {
     Display::copyPict(xBytes, yPos, 5, 48, invert ? 0xff : 0, &FONT40x48[48 * 5 * (19 - charCode)]);
 }
 
-float calcSpeed(const float windTable[][2], int ticksPerMin);
-
-void normalizetWindTable(float dest[WIND_TABLE_LEN][2], const NaviSettings *actualSettings);
+float calcSpeed(int fixedTics, float fixedWind, int ticksPerMin);
 
 #endif //MECH_DECK_MODULE_HPP

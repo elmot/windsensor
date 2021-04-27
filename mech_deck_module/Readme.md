@@ -107,7 +107,7 @@ SSID="EL_NAVI"
 
 TODO
 ===
-* CALIBRATION SCREEN!
+* CALIBRATION SCREEN! - DONE
 * Solder top board
 * Keys easier connect
 * Warning light - DONE

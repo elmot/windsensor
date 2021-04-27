@@ -142,7 +142,7 @@ void radioLoop(void) {
                     state.anemState = OK;
                 }
                 state.windTics = calcTpm(speedReport);
-                state.windSpdMps = calcSpeed(state.windTable, state.windTics);
+                state.windSpdMps = calcSpeed(state.fixedTics,state.fixedWindMs, state.windTics);
             }
             break;
         case nRF24_TX_TIMEOUT:
@@ -165,28 +165,10 @@ void radioLoop(void) {
     if (doDebug) printf(",ACK_PL=>%s<,ARC=%d,LST=%ld\r\n", nRF24_payload, otx_arc_cnt, packets_lost);
 }
 
-float calcSpeed(const float windTable[][2], int ticksPerMin) {
-    static const float DOUBLE_ZERO[] = {0, 0};
-    const float *lowBound = DOUBLE_ZERO;
-    const float *highBound;
-    int idx = 0;
-    if (ticksPerMin < 0) return 0;
-    for (; idx < WIND_TABLE_LEN; idx++) {
-        float v = state.windTable[idx][0];
-        if (v == 0) {
-            idx--;
-            break;
-        }
-        if (v > (float) ticksPerMin) break;
-    }
-    if (idx < 0) return 0;
-    highBound = windTable[idx];
-    float speed;
-    if (idx > 0) {
-        lowBound = windTable[idx - 1];
-    }
-    speed = lowBound[1] +
-            (highBound[1] - lowBound[1]) * ((float) ticksPerMin - lowBound[0]) / (highBound[0] - lowBound[0]);
+float calcSpeed(const int fixedTics, const float fixedWind, int ticksPerMin) {
+    if (ticksPerMin <= 0) return 0;
+
+    float speed = fixedWind * (float) ticksPerMin / (float)fixedTics;
     return speed < naviSettings->minWindMs ? 0 : speed;
 }
 

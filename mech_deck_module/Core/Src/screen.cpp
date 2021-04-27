@@ -6,18 +6,10 @@
 #include <cmath>
 
 /* LCM commands */
-#define LCM_SET_TEXT_HOME 0x40
-#define LCM_SET_TEXT_COLS 0x41
-
-#define LCM_SET_GRAPH_HOME 0x42
-#define LCM_SET_GRAPH_COLS 0x43
-
 #define MAX_LINE_POINTS 200
 
 MaskedDisplay maskedDisplay = MaskedDisplay();
 AffineTransform affineScreen = AffineTransform(maskedDisplay);
-
-AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
 
 Screen *Screen::activeScreen = &mainScreen;
 
@@ -300,9 +292,9 @@ void SettingsScreen::changeValue(int delta, unsigned int *changeableValue, unsig
         default:
             return;
     }
-    int digitValue = (*changeableValue / digitDivider) % 10;
-    int newDigitValue = (digitValue + delta + 10) % 10;
-    int correctionValue = (newDigitValue - digitValue) * digitDivider;
+    unsigned int digitValue = (*changeableValue / digitDivider) % 10;
+    unsigned int newDigitValue = (digitValue + delta + 10) % 10;
+    unsigned int correctionValue = (newDigitValue - digitValue) * digitDivider;
     *changeableValue += correctionValue;
     if (*changeableValue >= max) *changeableValue = min;
     else
@@ -314,9 +306,9 @@ void Screen::draw3digits(bool big, unsigned int val, unsigned int xBytes, unsign
     char char2 = val / 10 % 10;
     char char3 = val % 10;
     if (big) {
-        bigCharOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
-        bigCharOutput(char2, xBytes + 5, y, activepos == 1 ? 0xFF : 0);
-        bigCharOutput(char3, xBytes + 10, y, activepos == 2 ? 0xFF : 0);
+        bigCharOutput(char1, xBytes, y, activepos == 0);
+        bigCharOutput(char2, xBytes + 5, y, activepos == 1);
+        bigCharOutput(char3, xBytes + 10, y, activepos == 2);
     } else {
         charOutput(char1, xBytes, y, activepos == 0 ? 0xFF : 0);
         charOutput(char2, xBytes + 4, y, activepos == 1 ? 0xFF : 0);
