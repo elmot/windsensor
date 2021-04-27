@@ -21,6 +21,7 @@
 #include "main.h"
 #include "iwdg.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -132,6 +133,7 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_IWDG_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
     LL_USART_Enable(UART4);
   /* USER CODE END 2 */

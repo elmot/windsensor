@@ -7,9 +7,6 @@
 
 #include <string>
 #include "main.h"
-#include "stm32l4xx_hal_flash.h"
-#include "stm32l4xx_hal_flash_ex.h"
-
 
 #define KEY_RELEASED     0b000000u
 #define KEY_PRESSED      0b000010u
@@ -178,6 +175,9 @@ public:
 
     void processKeyboard() override;
 
+    static void enableAlarmLed();
+
+    static void disableAlarmLed();
 };
 
 class SettingsScreen : public Screen {

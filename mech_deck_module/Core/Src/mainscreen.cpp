@@ -25,6 +25,9 @@ void MainScreen::drawScreenData() {
         }
         if (angle < naviSettings->tooCloseAngle || angle > naviSettings->tooFreeAngle) {
             bigCharOutput(13, 25, 32);
+            enableAlarmLed();
+        } else {
+            disableAlarmLed();
         }
         bigCharOutput(direction, 20, 32);
         draw3digits(true, angle, 15, 80, -1);
@@ -41,6 +44,16 @@ void MainScreen::drawScreenData() {
             break;
         default:;
     }
+}
+
+void MainScreen::disableAlarmLed() {
+    LL_TIM_CC_DisableChannel(TIM2, LL_TIM_CHANNEL_CH1);
+    LL_TIM_DisableCounter(TIM2);
+}
+
+void MainScreen::enableAlarmLed() {
+    LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH1);
+    LL_TIM_EnableCounter(TIM2);
 }
 
 void MainScreen::processKeyboard() {
@@ -76,9 +89,11 @@ void MainScreen::updatePicture() {
         case CONN_TIMEOUT:
         case CONN_FAIL:
             Display::copyPict(6, 38, 4, 32, 0xFF, &FONT[2 * 32 * 4]);
+            enableAlarmLed();
             break;
         default:
             charOutput(CHAR_CONN_FAIL, 6, 38);
+            enableAlarmLed();
             break;
     }
     if (state.backLightPwm != Display::BG_MIN) {

@@ -32,6 +32,7 @@ extern "C" {
 
 #include "stm32l4xx_ll_iwdg.h"
 #include "stm32l4xx_ll_spi.h"
+#include "stm32l4xx_ll_tim.h"
 #include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_system.h"
@@ -48,6 +49,9 @@ extern "C" {
 #include <stdio.h>
 #include <stdbool.h>
 #include <memory.h>
+#include "stm32l4xx_hal_flash.h"
+#include "stm32l4xx_hal_flash_ex.h"
+#include "../../../sensor-signature.h"
 
 /* USER CODE END Includes */
 
@@ -61,7 +65,6 @@ extern "C" {
 
 #define NRF_SPI SPI2
 
-#include "../../../sensor-signature.h"
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

@@ -44,7 +44,7 @@ void initLcd(void) {
 }
 
 void splashLcd(void) {
-    for (int i = 0; i < (2 * SCREEN_WIDTH_BYTES) + 1; i++) {
+    for (int i = 0; i < (2 * SCREEN_WIDTH_BYTES) + 1; i+=2) {
         Display::copyPict(SPLASH_PICTURE);
         for (int j = 0; j < SCREEN_HEIGHT; j++) {
             int k = -j / 5 + i;
@@ -54,7 +54,7 @@ void splashLcd(void) {
             }
         }
         Display::paint();
-        msDelay(1);
+//        msDelay(1);
         LL_IWDG_ReloadCounter(IWDG);
     }
     msDelay(70);
