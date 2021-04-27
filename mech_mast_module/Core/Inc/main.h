@@ -33,6 +33,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
+#include "stdlib.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -67,6 +69,8 @@ extern volatile int wind_ticks_skipped;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define DIAG_Pin GPIO_PIN_13
+#define DIAG_GPIO_Port GPIOC
 #define VOLTS_Pin GPIO_PIN_0
 #define VOLTS_GPIO_Port GPIOA
 #define NRF_CSN_Pin GPIO_PIN_4
@@ -76,8 +80,6 @@ extern volatile int wind_ticks_skipped;
 #define NRF_IRQ_Pin GPIO_PIN_1
 #define NRF_IRQ_GPIO_Port GPIOB
 #define NRF_IRQ_EXTI_IRQn EXTI1_IRQn
-#define DIAG_Pin GPIO_PIN_12
-#define DIAG_GPIO_Port GPIOB
 #define ANCHOR_Pin GPIO_PIN_13
 #define ANCHOR_GPIO_Port GPIOB
 #define LIGHT_ENA_Pin GPIO_PIN_14

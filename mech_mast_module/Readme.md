@@ -37,7 +37,7 @@ AS5601 - Wind Speed Sensor, connected to TIM1_CH1
 
 Diagnostics LED
 ---
-Blue, Connected to PB12
+Red, Connected to PC13
 
 Signals:
 

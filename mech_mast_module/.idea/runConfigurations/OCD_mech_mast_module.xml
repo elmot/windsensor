@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="OCD mech_mast_module" type="com.jetbrains.cidr.embedded.openocd.conf.type" factoryName="com.jetbrains.cidr.embedded.openocd.conf.factory" PASS_PARENT_ENVS_2="true" PROJECT_NAME="mech_mast_module" TARGET_NAME="mech_mast_module.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="mech_mast_module" RUN_TARGET_NAME="mech_mast_module.elf">
     <openocd gdb-port="3333" telnet-port="4444" board-config="D:\projects\windsensor\mech_mast_module\st_nucleo_f103rb.cfg" reset-type="INIT" download-type="ALWAYS" />
@@ -6,3 +7,4 @@
     </method>
   </configuration>
 </component>
+

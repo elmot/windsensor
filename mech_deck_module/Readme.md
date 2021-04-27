@@ -39,8 +39,8 @@ ERM240128FS-1 (Display)
 | D3        |      13 | PC3       | CN7-37         |
 | D4        |      14 | PC4       | CN10-34        |
 | D5        |      15 | PC5       | CN10-6         |
-| D6        |      16 | PC6       | CN10-19        |
-| D7        |      17 | PC7       | CN10-6         |
+| D6        |      16 | PC6       | CN10-4         |
+| D7        |      17 | PC7       | CN10-19        |
 | FS        |      18 | GND       | CN7-20         |
 | VEE       |      19 | ---       | **trim mid**   |
 | LEDA      |      20 | **+5**    | CN7-18         |
@@ -120,3 +120,10 @@ WIFI
 
 ESP8266EX, 4Mbit
 SSID="EL_NAVI"
+
+
+External Power Supply
+====
+Wire 1 - Ground
+Wire 4 - Mast lights output
+Wire 5 - +12 
