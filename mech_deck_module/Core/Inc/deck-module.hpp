@@ -7,6 +7,8 @@
 
 #include <string>
 #include "main.h"
+#include "stm32l4xx_hal_flash.h"
+#include "stm32l4xx_hal_flash_ex.h"
 
 
 #define KEY_RELEASED     0b000000u

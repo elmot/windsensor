@@ -78,10 +78,13 @@ void Display::paint() {
     transmitByte(0xAA);
     transmitByte(0xA0);
     transmitByte(brightness);
-    for(unsigned char byte : screen_buffer) {
-        transmitByte(byte);
-        if(byte==0xAA) {//escaping
-            transmitByte(0xA9);
+    for (int y = 127; y >= 0; y--) {
+        for (int i = 0; i < 30; i++) {
+            uint8_t byte = screen_buffer[y * 30 + i];
+            transmitByte(byte);
+            if (byte == 0xAA) {//escaping
+                transmitByte(0xA9);
+            }
         }
     }
 }
