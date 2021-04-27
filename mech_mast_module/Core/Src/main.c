@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "../../../sensor-signature.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,19 +72,13 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 volatile bool sensorPhase;
-char  signature[9];
+const char signature[] = SENSOR_SIGNATURE;
 
 void resetI2C() {
     HAL_I2C_DeInit(&hi2c1);
     MX_I2C1_Init();
 }
-void createSignature() {
-    uint32_t bits[3];
-    bits[0]=HAL_GetUIDw0();
-    bits[1]=HAL_GetUIDw1();
-    bits[2]=HAL_GetUIDw2();
-    sprintf(signature, "%8lx", bits[0] ^ bits[1] ^ bits[2]);
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -133,7 +127,6 @@ int main(void)
     HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
     HAL_ADCEx_InjectedStart(&hadc1);
     HAL_TIM_Base_Start_IT(&htim2);
-    createSignature();
   /* USER CODE END 2 */
 
   /* Infinite loop */

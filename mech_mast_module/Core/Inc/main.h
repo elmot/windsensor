@@ -94,7 +94,7 @@ void Error_Indication(int ledTimeOn, int ledTimeOff);
 
 extern volatile bool sensorPhase;
 
-extern char signature[9];
+extern const char signature[];
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

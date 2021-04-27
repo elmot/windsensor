@@ -50,8 +50,8 @@ Keys/switches (all set to pull-up)
 | ANCHOR LIGHT | PA1	   | CN7-30     |
 | CANCEL       | PD2	   | CN7-4      |
 | UP           | PB3	   | CN10-31    |
-| DOWN         | PB4	   | CN10-28    |
-| OK           | PB5	   | CN10-30    |
+| DOWN         | PB4	   | CN10-27    |
+| OK           | PB5	   | CN10-29    |
 
 Misc
 ---

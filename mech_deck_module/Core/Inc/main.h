@@ -61,7 +61,7 @@ extern "C" {
 
 #define NRF_SPI SPI2
 
-#define SENSOR_SIGNATURE "33225c70"
+#include "../../../sensor-signature.h"
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

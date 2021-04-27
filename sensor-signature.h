@@ -1,0 +1,1 @@
+#define SENSOR_SIGNATURE "33225c70"
