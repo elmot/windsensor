@@ -130,7 +130,7 @@ void radioLoop(void) {
             char receivedSignature[9];
             sscanf((const char *) nRF24_payload, "%c;%x;%d;%x;%d;%8s",
                    &buttonReport, &agcReport, &angle, &speedReport, &voltage, receivedSignature);
-            if (strcmp(SENSOR_SIGNATURE, receivedSignature) == 0) {
+            if (strncmp(SENSOR_SIGNATURE, receivedSignature, SENSOR_SIGNATURE_LEN) == 0) {
                 if (agcReport == 0x80 || agcReport == 0) {
                     state.windAngle = -1;
                     state.windAngleNonCorrected = -1;
@@ -168,7 +168,7 @@ void radioLoop(void) {
 float calcSpeed(const int fixedTics, const float fixedWind, int ticksPerMin) {
     if (ticksPerMin <= 0) return 0;
 
-    float speed = fixedWind * (float) ticksPerMin / (float)fixedTics;
+    float speed = 0.5f + fixedWind * (float) ticksPerMin / (float)fixedTics;
     return speed < naviSettings->minWindMs ? 0 : speed;
 }
 

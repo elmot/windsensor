@@ -101,7 +101,7 @@ void radioLoop() {
                 (payload_length < 4)
                 || (nRF24_payload[0] != 'B')
                 || (nRF24_payload[2] != ';')
-                || (strcmp((char *)&nRF24_payload[3], signature) != 0)) {
+                || (strncmp((char *)&nRF24_payload[3], signature, SENSOR_SIGNATURE_LEN) != 0)) {
             return;
         }
         if (payload_length > 0) {

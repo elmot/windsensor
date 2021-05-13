@@ -11,7 +11,10 @@
 MaskedDisplay maskedDisplay = MaskedDisplay();
 AffineTransform affineScreen = AffineTransform(maskedDisplay);
 
-Screen *Screen::activeScreen = &mainScreen;
+AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
+Screen * Screen::activeScreen = &mainScreen;
+
+SpeedCorrectScreen speedCorrectScreen = SpeedCorrectScreen();
 
 static uint8_t screen_buffer[SCREEN_WIDTH_BYTES * SCREEN_HEIGHT];
 static uint8_t brightness  = Display::BG_MIN;

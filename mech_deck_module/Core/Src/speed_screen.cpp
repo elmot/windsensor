@@ -37,5 +37,3 @@ void SpeedCorrectScreen::save() {
     localSettings.fixedTics = state.windTics;
     SettingsScreen::save();
 }
-
-SpeedCorrectScreen speedCorrectScreen = SpeedCorrectScreen();

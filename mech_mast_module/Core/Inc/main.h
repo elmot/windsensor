@@ -35,6 +35,7 @@ extern "C" {
 #include "stdbool.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "../../../sensor-signature.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

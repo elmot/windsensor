@@ -37,5 +37,3 @@ void AngleCorrectScreen::gotoNextScreen() {
 int AngleCorrectScreen::maxPosition() {
     return LAST_STD_BUTTON + 3;
 }
-
-AngleCorrectScreen angleCorrectScreen = AngleCorrectScreen();
