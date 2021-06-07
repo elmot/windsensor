@@ -48,10 +48,10 @@ Keys/switches (all set to pull-up)
 |--------------|-----------|------------|
 | NAV LIGHT    | PA0	   | CN7-28     |
 | ANCHOR LIGHT | PA1	   | CN7-30     |
-| CANCEL       | PD2	   | CN7-4      |
-| UP           | PB3	   | CN10-31    |
-| DOWN         | PB4	   | CN10-27    |
-| OK           | PB5	   | CN10-29    |
+| UP           | PB4	   | CN10-27    |
+| DOWN         | PB5	   | CN10-29    |
+| OK           | PB3	   | CN10-31    |
+| CANCEL       | PA10	   | CN10-33    |
 
 Misc
 ---
