@@ -106,16 +106,16 @@ inline void msDelay(int delay) {
 #define NRF_CE_GPIO_Port GPIOB
 #define NRF_CSN_Pin LL_GPIO_PIN_12
 #define NRF_CSN_GPIO_Port GPIOB
-#define KEY_CANCEL_Pin LL_GPIO_PIN_10
-#define KEY_CANCEL_GPIO_Port GPIOA
+#define KEY_OK_Pin LL_GPIO_PIN_10
+#define KEY_OK_GPIO_Port GPIOA
 #define TMS_Pin LL_GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin LL_GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define KEY_OK_Pin LL_GPIO_PIN_3
-#define KEY_OK_GPIO_Port GPIOB
-#define KEY_UP_Pin LL_GPIO_PIN_4
+#define KEY_UP_Pin LL_GPIO_PIN_3
 #define KEY_UP_GPIO_Port GPIOB
+#define KEY_CANCEL_Pin LL_GPIO_PIN_4
+#define KEY_CANCEL_GPIO_Port GPIOB
 #define KEY_DOWN_Pin LL_GPIO_PIN_5
 #define KEY_DOWN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
